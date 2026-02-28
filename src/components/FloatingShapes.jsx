@@ -1,4 +1,5 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
+import useIsMobile from '../hooks/useIsMobile'
 
 const shapes = [
   { type: 'circle', size: 6, x: '10%', y: '20%', color: 'bg-primary/10', delay: 0 },
@@ -19,26 +20,10 @@ function Shape({ shape }) {
   if (shape.type === 'triangle') {
     return (
       <motion.div
-        style={{
-          left: shape.x,
-          top: shape.y,
-          y,
-          rotate,
-        }}
-        animate={{
-          y: [0, -15, 0, 10, 0],
-          rotate: [0, 5, -5, 3, 0],
-        }}
-        transition={{
-          duration: 8 + shape.delay * 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: shape.delay,
-        }}
+        style={{ left: shape.x, top: shape.y, y, rotate }}
         className="absolute pointer-events-none z-0"
       >
         <div
-          className={`w-0 h-0 border-l-[${shape.size * 2}px] border-r-[${shape.size * 2}px] border-b-[${shape.size * 3}px] border-l-transparent border-r-transparent ${shape.color}`}
           style={{
             borderLeftWidth: shape.size * 2,
             borderRightWidth: shape.size * 2,
@@ -56,22 +41,8 @@ function Shape({ shape }) {
     return (
       <motion.div
         style={{
-          left: shape.x,
-          top: shape.y,
-          y,
-          rotate,
-          width: shape.size * 4,
-          height: shape.size * 4,
-        }}
-        animate={{
-          y: [0, -20, 0, 15, 0],
-          scale: [1, 1.1, 1, 0.95, 1],
-        }}
-        transition={{
-          duration: 10 + shape.delay,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: shape.delay,
+          left: shape.x, top: shape.y, y, rotate,
+          width: shape.size * 4, height: shape.size * 4,
         }}
         className={`absolute pointer-events-none z-0 rounded-full border ${shape.color}`}
       />
@@ -81,23 +52,9 @@ function Shape({ shape }) {
   return (
     <motion.div
       style={{
-        left: shape.x,
-        top: shape.y,
-        y,
+        left: shape.x, top: shape.y, y,
         rotate: shape.type === 'square' ? rotate : undefined,
-        width: shape.size * 4,
-        height: shape.size * 4,
-      }}
-      animate={{
-        y: [0, -20, 0, 15, 0],
-        rotate: shape.type === 'square' ? [0, 90, 180, 270, 360] : undefined,
-        scale: [1, 1.05, 1, 0.95, 1],
-      }}
-      transition={{
-        duration: 10 + shape.delay * 2,
-        repeat: Infinity,
-        ease: 'easeInOut',
-        delay: shape.delay,
+        width: shape.size * 4, height: shape.size * 4,
       }}
       className={`absolute pointer-events-none z-0 ${shape.color} ${
         shape.type === 'circle' ? 'rounded-full' : 'rounded-sm'
@@ -107,6 +64,11 @@ function Shape({ shape }) {
 }
 
 export default function FloatingShapes() {
+  const isMobile = useIsMobile()
+
+  // Skip entirely on mobile — too many scroll-linked transforms
+  if (isMobile) return null
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
       {shapes.map((shape, i) => (

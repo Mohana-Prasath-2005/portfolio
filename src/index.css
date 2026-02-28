@@ -515,6 +515,19 @@
 }
 
 /* ============================================
+   Infinite marquee (CSS-based, GPU-accelerated)
+   ============================================ */
+.marquee-track {
+  animation: marquee-scroll linear infinite;
+  will-change: transform;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ============================================
    Lenis smooth scroll overrides
    ============================================ */
 html.lenis, html.lenis body {
@@ -527,4 +540,40 @@ html.lenis, html.lenis body {
 
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
+}
+
+/* ============================================
+   Mobile performance optimizations
+   ============================================ */
+@media (max-width: 767px), (hover: none) and (pointer: coarse) {
+  .animated-grid { display: none !important; }
+
+  .animate-morph,
+  .animate-morph-reverse,
+  .animate-morph-slow {
+    animation: none !important;
+  }
+
+  .stat-card-border {
+    animation: none !important;
+    background: rgba(6, 182, 212, 0.15) !important;
+  }
+
+  .btn-uiverse::before,
+  .btn-uiverse::after {
+    animation: none !important;
+  }
+
+  .btn-uiverse::before {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6, #06b6d4, #8b5cf6);
+  }
+
+  .noise-overlay {
+    display: none !important;
+  }
+
+  .glass,
+  .glass-hover {
+    backdrop-filter: blur(8px);
+  }
 }

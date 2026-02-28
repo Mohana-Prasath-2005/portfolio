@@ -5,6 +5,8 @@ export default function TiltCard({ children, className = '', intensity = 10 }) {
   const [style, setStyle] = useState({})
 
   const handleMouseMove = (e) => {
+    // Skip on touch devices
+    if ('ontouchstart' in window) return
     if (!ref.current) return
     const rect = ref.current.getBoundingClientRect()
     const x = e.clientX - rect.left
