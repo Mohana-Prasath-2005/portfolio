@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { HiUserGroup, HiAcademicCap, HiStar, HiLightBulb, HiCalendar } from 'react-icons/hi'
+import { HiUserGroup, HiAcademicCap, HiStar, HiLightBulb } from 'react-icons/hi'
 import SpotlightCard from './SpotlightCard'
 import TiltCard from './TiltCard'
 
@@ -50,15 +50,6 @@ const roles = [
   },
 ]
 
-const capabilities = [
-  'Represented department in academic board decisions',
-  'Coordinated college-wide technical events',
-  'Managed and mentored student teams',
-  'Organized innovation and outreach programs',
-  'Stakeholder communication with faculty and administration',
-  'Drove outcomes across cross-functional groups',
-]
-
 export default function Leadership() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
@@ -106,23 +97,6 @@ Leadership & Governance
             </motion.div>
           ))}
         </div>
-
-        {/* Capability tags */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-8 flex flex-wrap gap-3 justify-center"
-        >
-          {capabilities.map((c) => (
-            <span
-              key={c}
-              className="px-4 py-2 rounded-full text-xs glass text-slate-400 hover:text-white hover:border-accent/20 transition-all duration-300 shine-tag"
-            >
-              {c}
-            </span>
-          ))}
-        </motion.div>
       </div>
     </section>
   )

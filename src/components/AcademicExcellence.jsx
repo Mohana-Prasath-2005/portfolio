@@ -23,13 +23,13 @@ function AnimatedValue({ target, decimals = 2, duration = 2 }) {
 }
 
 const semesters = [
-  { sem: 'I', cgpa: 9.136 },
-  { sem: 'II', cgpa: 9.044 },
-  { sem: 'III', cgpa: 9.224 },
-  { sem: 'IV', cgpa: 9.286 },
-  { sem: 'V', cgpa: 9.228 },
-  { sem: 'VI', cgpa: 9.199 },
-  { sem: 'VII', cgpa: 8.90 },
+  { sem: '1', cgpa: 9.136 },
+  { sem: '2', cgpa: 9.044 },
+  { sem: '3', cgpa: 9.224 },
+  { sem: '4', cgpa: 9.286 },
+  { sem: '5', cgpa: 9.228 },
+  { sem: '6', cgpa: 9.199 },
+  { sem: '7', cgpa: 8.90 },
 ]
 
 const maxCgpa = 10

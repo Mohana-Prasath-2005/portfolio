@@ -1,7 +1,6 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { FaGithub, FaLinkedin, FaEnvelope, FaPhone } from 'react-icons/fa'
-import { SiLeetcode, SiHackerrank } from 'react-icons/si'
+import { FaEnvelope, FaPhone } from 'react-icons/fa'
 import SpotlightCard from './SpotlightCard'
 import MagneticButton from './MagneticButton'
 
@@ -18,30 +17,6 @@ const links = [
     label: 'Phone',
     value: '+91 8098286056',
     href: 'tel:+918098286056',
-  },
-  {
-    icon: FaGithub,
-    label: 'GitHub',
-    value: 'Mohana-Prasath-2005',
-    href: 'https://github.com/Mohana-Prasath-2005',
-  },
-  {
-    icon: FaLinkedin,
-    label: 'LinkedIn',
-    value: 'Mohana Prasath G',
-    href: 'https://www.linkedin.com/in/mohana-prasath-g-279139267/',
-  },
-  {
-    icon: SiLeetcode,
-    label: 'LeetCode',
-    value: 'MOHAN-2005',
-    href: 'https://leetcode.com/u/MOHAN-2005/',
-  },
-  {
-    icon: SiHackerrank,
-    label: 'HackerRank',
-    value: 'MOHAN_2005',
-    href: 'https://www.hackerrank.com/profile/MOHAN_2005',
   },
 ]
 
