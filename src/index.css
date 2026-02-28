@@ -1,0 +1,530 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    cursor: none;
+  }
+
+  body {
+    background: #030014;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Restore default cursor on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    html, body, * { cursor: auto !important; }
+    .cursor-dot, .cursor-ring { display: none !important; }
+  }
+
+  a, button, [role="button"], input, textarea, select {
+    cursor: none;
+  }
+
+  ::selection {
+    background: rgba(6, 182, 212, 0.3);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #030014;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.3);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.5);
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-hover {
+    @apply glass;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(6, 182, 212, 0.2);
+    box-shadow:
+      0 8px 40px rgba(6, 182, 212, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #06b6d4, #8b5cf6, #06b6d4);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  .gradient-border {
+    position: relative;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(139, 92, 246, 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 py-6 md:py-10;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-white mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-slate-400 text-lg max-w-2xl;
+  }
+}
+
+/* ============================================
+   Custom Cursor
+   ============================================ */
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #06b6d4;
+  pointer-events: none;
+  z-index: 99999;
+  transition: width 0.15s, height 0.15s, opacity 0.15s;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+  mix-blend-mode: screen;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(6, 182, 212, 0.3);
+  pointer-events: none;
+  z-index: 99998;
+  transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, background 0.3s ease, opacity 0.15s;
+}
+
+/* ============================================
+   UIverse-style Animated Buttons
+   ============================================ */
+
+/* Primary CTA — Glowing animated border */
+.btn-uiverse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(6, 182, 212, 0.1);
+  border: none;
+  border-radius: 12px;
+  cursor: none;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  text-decoration: none;
+  z-index: 1;
+}
+
+.btn-uiverse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1.5px;
+  background: linear-gradient(
+    var(--btn-angle, 0deg),
+    #06b6d4,
+    #8b5cf6,
+    #06b6d4,
+    #8b5cf6
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: btn-rotate 3s linear infinite;
+  z-index: -1;
+}
+
+.btn-uiverse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(
+    var(--btn-angle, 0deg),
+    rgba(6, 182, 212, 0.15),
+    rgba(139, 92, 246, 0.15),
+    rgba(6, 182, 212, 0.15)
+  );
+  animation: btn-rotate 3s linear infinite;
+  filter: blur(20px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -2;
+}
+
+.btn-uiverse:hover::after {
+  opacity: 1;
+}
+
+.btn-uiverse:hover {
+  background: rgba(6, 182, 212, 0.15);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+}
+
+@property --btn-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes btn-rotate {
+  to {
+    --btn-angle: 360deg;
+  }
+}
+
+/* Secondary — Shimmer fill */
+.btn-shimmer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: none;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  text-decoration: none;
+}
+
+.btn-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(6, 182, 212, 0.08),
+    rgba(139, 92, 246, 0.08),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.btn-shimmer:hover::before {
+  left: 100%;
+}
+
+.btn-shimmer:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.08);
+}
+
+/* Download button — Pulse ring */
+.btn-pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #06b6d4;
+  background: transparent;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 12px;
+  cursor: none;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  text-decoration: none;
+}
+
+.btn-pulse:hover {
+  color: #fff;
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), 0 0 60px rgba(6, 182, 212, 0.05);
+}
+
+/* ============================================
+   Shine sweep on tech tags
+   ============================================ */
+.shine-tag {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-tag::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.shine-tag:hover::after {
+  left: 100%;
+}
+
+/* ============================================
+   Animated grid background (global)
+   ============================================ */
+.animated-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(6, 182, 212, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent);
+}
+
+/* ============================================
+   Noise texture overlay
+   ============================================ */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ============================================
+   Text reveal animation
+   ============================================ */
+.text-reveal {
+  overflow: hidden;
+}
+
+.text-reveal > span {
+  display: inline-block;
+  transform: translateY(100%);
+  animation: text-reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes text-reveal-up {
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Ambient background orbs
+   ============================================ */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================
+   Social link magnetic hover
+   ============================================ */
+.social-magnetic {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-magnetic:hover {
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(6, 182, 212, 0.2);
+  border-color: rgba(6, 182, 212, 0.3) !important;
+  color: #06b6d4 !important;
+}
+
+/* ============================================
+   Floating animation for decorative elements
+   ============================================ */
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(1deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
+}
+
+/* ============================================
+   Gradient text animation
+   ============================================ */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ============================================
+   Morphing blob animations for background
+   ============================================ */
+.animate-morph {
+  animation: morph 20s ease-in-out infinite;
+}
+
+.animate-morph-reverse {
+  animation: morph-reverse 25s ease-in-out infinite;
+}
+
+.animate-morph-slow {
+  animation: morph-slow 30s ease-in-out infinite;
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: translate(0, 0) rotate(0deg); }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: translate(20px, -30px) rotate(5deg); }
+  50% { border-radius: 50% 60% 30% 60% / 30% 40% 70% 50%; transform: translate(-10px, 20px) rotate(-5deg); }
+  75% { border-radius: 40% 60% 50% 40% / 60% 50% 40% 60%; transform: translate(15px, 10px) rotate(3deg); }
+}
+
+@keyframes morph-reverse {
+  0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: translate(0, 0) rotate(0deg); }
+  33% { border-radius: 60% 40% 30% 70% / 60% 40% 60% 40%; transform: translate(-20px, 15px) rotate(-4deg); }
+  66% { border-radius: 30% 60% 50% 40% / 50% 60% 30% 60%; transform: translate(10px, -20px) rotate(4deg); }
+}
+
+@keyframes morph-slow {
+  0%, 100% { border-radius: 50% 50% 50% 50%; transform: translate(0, 0) scale(1); }
+  50% { border-radius: 60% 40% 60% 40%; transform: translate(10px, -10px) scale(1.05); }
+}
+
+/* ============================================
+   Slow pulse for ISTE trophy glow
+   ============================================ */
+.animate-pulse-slow {
+  animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================
+   Counter glow effect when done counting
+   ============================================ */
+.counter-glow {
+  text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  animation: counter-pulse 2s ease-in-out 1;
+}
+
+@keyframes counter-pulse {
+  0% { text-shadow: 0 0 0 currentColor; }
+  50% { text-shadow: 0 0 30px currentColor, 0 0 60px currentColor; }
+  100% { text-shadow: 0 0 0 currentColor; }
+}
+
+/* ============================================
+   Stat card animated rotating border
+   ============================================ */
+.stat-card-border {
+  position: relative;
+  padding: 1px;
+  background: linear-gradient(
+    var(--stat-angle, 0deg),
+    rgba(6, 182, 212, 0.3),
+    transparent 40%,
+    transparent 60%,
+    rgba(139, 92, 246, 0.3)
+  );
+  animation: stat-border-rotate 4s linear infinite;
+}
+
+.stat-card-border > * {
+  border: none !important;
+}
+
+@property --stat-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes stat-border-rotate {
+  to {
+    --stat-angle: 360deg;
+  }
+}
+
+/* ============================================
+   Lenis smooth scroll overrides
+   ============================================ */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
