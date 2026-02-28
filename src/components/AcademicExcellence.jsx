@@ -105,12 +105,12 @@ Academic Excellence
                 <p className="text-slate-500 text-xs mb-8">7 semesters of consistency</p>
 
                 {/* Bar chart */}
-                <div className="flex items-end gap-3 h-48">
+                <div className="flex items-end gap-1.5 sm:gap-3 h-48">
                   {semesters.map((s, idx) => {
                     const height = ((s.cgpa - 8) / (maxCgpa - 8)) * 100
                     return (
-                      <div key={s.sem} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                        <span className="text-white text-xs font-mono">{s.cgpa}</span>
+                      <div key={s.sem} className="flex-1 flex flex-col items-center gap-1 sm:gap-2 h-full justify-end">
+                        <span className="text-white text-[10px] sm:text-xs font-mono">{s.cgpa}</span>
                         <motion.div
                           initial={{ height: 0 }}
                           animate={isInView ? { height: `${height}%` } : {}}
@@ -121,7 +121,7 @@ Academic Excellence
                               : 'bg-gradient-to-t from-slate-600/60 to-slate-500'
                           }`}
                         />
-                        <span className="text-slate-500 text-xs">Sem {s.sem}</span>
+                        <span className="text-slate-500 text-[10px] sm:text-xs">S{s.sem}</span>
                       </div>
                     )
                   })}
