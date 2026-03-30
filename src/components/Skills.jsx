@@ -46,7 +46,7 @@ const categories = [
       { name: 'Flask', icon: SiFlask },
       { name: 'Express', icon: SiExpress },
       { name: 'SQLite', icon: SiSqlite },
-      { name: 'REST APIs', icon: HiCube },
+      { name: 'SoapUI', icon: HiCube },
       { name: 'React', icon: SiReact },
       { name: 'Tailwind', icon: SiTailwindcss },
     ],

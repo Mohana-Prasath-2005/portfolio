@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { FaEnvelope, FaPhone } from 'react-icons/fa'
+import { FaEnvelope, FaPhone, FaLinkedin } from 'react-icons/fa'
 import SpotlightCard from './SpotlightCard'
 import MagneticButton from './MagneticButton'
 
@@ -17,6 +17,12 @@ const links = [
     label: 'Phone',
     value: '+91 8098286056',
     href: 'tel:+918098286056',
+  },
+  {
+    icon: FaLinkedin,
+    label: 'LinkedIn',
+    value: 'Mohana Prasath G',
+    href: 'https://www.linkedin.com/in/mohana-prasath-g-279139267/',
   },
 ]
 

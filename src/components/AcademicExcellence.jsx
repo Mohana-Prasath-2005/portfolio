@@ -29,7 +29,7 @@ const semesters = [
   { sem: '4', cgpa: 9.286 },
   { sem: '5', cgpa: 9.228 },
   { sem: '6', cgpa: 9.199 },
-  { sem: '7', cgpa: 8.90 },
+  { sem: '7', cgpa: 9.10 },
 ]
 
 const maxCgpa = 10
@@ -62,7 +62,7 @@ Academic Excellence
             <TiltCard intensity={6}>
               <SpotlightCard className="glass-hover rounded-2xl p-8 flex flex-col items-center justify-center text-center h-full">
                 <p className="text-5xl md:text-6xl font-bold gradient-text">
-                  <AnimatedValue target={8.90} />
+                  <AnimatedValue target={9.10} />
                 </p>
                 <p className="text-slate-400 mt-2">Cumulative CGPA</p>
                 <p className="text-slate-500 text-xs mt-1">B.E CSE — Till VII Semester</p>
@@ -127,11 +127,6 @@ Academic Excellence
                   })}
                 </div>
 
-                {/* Threshold line annotation */}
-                <div className="mt-4 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-primary" />
-                  <span className="text-slate-500 text-xs">Above 9.0 CGPA</span>
-                </div>
               </SpotlightCard>
             </TiltCard>
           </motion.div>

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import IsteAward from './components/IsteAward'
+import AchievementsTicker from './components/AchievementsTicker'
 import CareerMilestones from './components/CareerMilestones'
 import Projects from './components/Projects'
 import Innovation from './components/Innovation'
@@ -21,8 +22,10 @@ import useIsMobile from './hooks/useIsMobile'
 
 function SectionDivider() {
   return (
-    <div className="flex justify-center">
-      <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+    <div className="section-divider-animated max-w-2xl mx-auto px-8">
+      <div className="divider-line" />
+      <div className="divider-dot" />
+      <div className="divider-line" />
     </div>
   )
 }
@@ -75,6 +78,7 @@ export default function App() {
           <Hero />
           <SectionDivider />
           <IsteAward />
+          <AchievementsTicker />
           <SectionDivider />
           <CareerMilestones />
           <SectionDivider />

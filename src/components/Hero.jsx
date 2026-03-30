@@ -1,10 +1,11 @@
-import { motion } from 'framer-motion'
-import { useState, useEffect, useCallback } from 'react'
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { HiDownload } from 'react-icons/hi'
 import { FaGithub, FaLinkedin } from 'react-icons/fa'
 import { SiLeetcode } from 'react-icons/si'
 import ParticleBackground from './ParticleBackground'
 import MagneticButton from './MagneticButton'
+import useIsMobile from '../hooks/useIsMobile'
 
 const roles = ['Software Engineer', 'Data Analyst', 'Full-Stack Developer']
 
@@ -45,47 +46,81 @@ function TypingEffect() {
   )
 }
 
-// Staggered character animation for the name
-function AnimatedName() {
+// 3D perspective name with mouse tracking
+function AnimatedName3D() {
+  const ref = useRef(null)
+  const isMobile = useIsMobile()
   const firstName = 'Mohana Prasath'
   const lastName = 'G'
 
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [8, -8]), { stiffness: 150, damping: 20 })
+  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-8, 8]), { stiffness: 150, damping: 20 })
+
+  useEffect(() => {
+    if (isMobile) return
+    const handleMouse = (e) => {
+      const rect = ref.current?.getBoundingClientRect()
+      if (!rect) return
+      mouseX.set(e.clientX - rect.left - rect.width / 2)
+      mouseY.set(e.clientY - rect.top - rect.height / 2)
+    }
+    window.addEventListener('mousemove', handleMouse)
+    return () => window.removeEventListener('mousemove', handleMouse)
+  }, [isMobile, mouseX, mouseY])
+
   return (
-    <motion.h1
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="text-4xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight mb-6"
+    <motion.div
+      ref={ref}
+      style={isMobile ? {} : { rotateX, rotateY, transformPerspective: 800 }}
+      className="will-change-transform"
     >
-      {firstName.split('').map((char, i) => (
+      <motion.h1
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-4xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight mb-6"
+      >
+        {firstName.split('').map((char, i) => (
+          <motion.span
+            key={i}
+            initial={{ opacity: 0, y: 50, rotateX: -90 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{
+              duration: 0.5,
+              delay: 0.8 + i * 0.04,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className="inline-block"
+            style={{ transformOrigin: 'bottom' }}
+          >
+            {char === ' ' ? '\u00A0' : char}
+          </motion.span>
+        ))}
+        {' '}
         <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 50, rotateX: -90 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          initial={{ opacity: 0, scale: 0, rotate: -180 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
           transition={{
-            duration: 0.5,
-            delay: 0.8 + i * 0.04,
+            duration: 0.8,
+            delay: 0.8 + firstName.length * 0.04 + 0.1,
             ease: [0.16, 1, 0.3, 1],
           }}
-          className="inline-block"
-          style={{ transformOrigin: 'bottom' }}
+          className="inline-block gradient-text"
         >
-          {char === ' ' ? '\u00A0' : char}
+          {lastName}
         </motion.span>
-      ))}
-      {' '}
-      <motion.span
-        initial={{ opacity: 0, scale: 0, rotate: -180 }}
-        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={{
-          duration: 0.8,
-          delay: 0.8 + firstName.length * 0.04 + 0.1,
-          ease: [0.16, 1, 0.3, 1],
-        }}
-        className="inline-block gradient-text"
-      >
-        {lastName}
-      </motion.span>
-    </motion.h1>
+      </motion.h1>
+
+      {/* Glowing underline beneath the name */}
+      <motion.div
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={{ scaleX: 1, opacity: 1 }}
+        transition={{ duration: 1, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
+        className="h-[2px] w-48 md:w-64 mx-auto bg-gradient-to-r from-transparent via-primary/60 to-transparent origin-center -mt-3 mb-6"
+      />
+    </motion.div>
   )
 }
 
@@ -103,8 +138,8 @@ export default function Hero() {
       <div className="bg-orb w-80 h-80 bg-accent/20 bottom-20 -right-40" />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
-        {/* Name with staggered character animation */}
-        <AnimatedName />
+        {/* 3D Name with mouse tracking */}
+        <AnimatedName3D />
 
         {/* Typing title */}
         <motion.div
@@ -167,7 +202,7 @@ export default function Hero() {
             { icon: FaGithub, href: 'https://github.com/Mohana-Prasath-2005', label: 'GitHub' },
             { icon: FaLinkedin, href: 'https://www.linkedin.com/in/mohana-prasath-g-279139267/', label: 'LinkedIn' },
             { icon: SiLeetcode, href: 'https://leetcode.com/u/MOHAN-2005/', label: 'LeetCode' },
-          ].map(({ icon: Icon, href, label }, i) => (
+          ].map(({ icon: Icon, href, label }) => (
             <MagneticButton
               key={label}
               as="a"

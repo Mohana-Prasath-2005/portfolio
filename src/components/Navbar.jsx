@@ -4,6 +4,7 @@ import { HiMenu, HiX } from 'react-icons/hi'
 import MagneticButton from './MagneticButton'
 
 const navLinks = [
+  { name: 'Awards', href: '#awards' },
   { name: 'Career', href: '#career' },
   { name: 'Projects', href: '#projects' },
   { name: 'Innovation', href: '#innovation' },

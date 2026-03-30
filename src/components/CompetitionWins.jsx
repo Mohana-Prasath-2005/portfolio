@@ -29,14 +29,13 @@ function Counter({ target, suffix = '', duration = 2 }) {
 }
 
 const stats = [
-  { emoji: '🥇', label: 'First Prizes', value: 6, suffix: '+', color: 'from-amber-400 to-yellow-500', glow: 'shadow-amber-400/20' },
-  { emoji: '🥈', label: 'Second Prizes', value: 8, suffix: '+', color: 'from-slate-300 to-slate-400', glow: 'shadow-slate-300/20' },
+  { emoji: '🥇', label: 'First Prizes', value: 13, suffix: '+', color: 'from-amber-400 to-yellow-500', glow: 'shadow-amber-400/20' },
+  { emoji: '🥈', label: 'Second Prizes', value: 11, suffix: '+', color: 'from-slate-300 to-slate-400', glow: 'shadow-slate-300/20' },
   { emoji: '🏅', label: 'Podium Finishes', value: 15, suffix: '+', color: 'from-orange-400 to-amber-500', glow: 'shadow-orange-400/20' },
   { emoji: '⚡', label: 'Events Participated', value: 50, suffix: '+', color: 'from-cyan-400 to-blue-500', glow: 'shadow-cyan-400/20' },
 ]
 
 const highlights = [
-  { prize: '🏆', event: 'Best Co-Curricular Student (CSE)', venue: 'Nandha Engineering College, 2025' },
   { prize: '1st', event: 'Paper Presentation — Security Technologies', venue: 'PIET, Pollachi' },
   { prize: '1st', event: 'UI/UX Design Competition', venue: 'GALAXY\'24, GCE Erode' },
   { prize: '1st', event: 'Paper Presentation — AI in Healthcare', venue: 'ESEC' },
