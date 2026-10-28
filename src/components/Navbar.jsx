@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FaGithub, FaLinkedin } from 'react-icons/fa'
+import { SiLeetcode } from 'react-icons/si'
 import Logo from './Logo'
 import useActiveSection from '../hooks/useActiveSection'
 import { sections, socials } from '../data/profile'
@@ -7,6 +9,7 @@ import { sections, socials } from '../data/profile'
 const primary = ['about', 'stack', 'work', 'research', 'journey', 'awards', 'contact']
 const primaryLinks = sections.filter((s) => primary.includes(s.id))
 const sectionIds = sections.map((s) => s.id)
+const socialIcons = { github: FaGithub, linkedin: FaLinkedin, leetcode: SiLeetcode }
 
 function MenuIcon({ open }) {
   return (
@@ -69,9 +72,9 @@ export default function Navbar() {
           scrolled || open ? 'bg-canvas/75 shadow-[0_1px_0_rgb(var(--fg)/0.07)] backdrop-blur-xl' : ''
         }`}
       >
-        <nav aria-label="Primary" className="shell flex h-[4.5rem] items-center justify-between gap-6">
+        <nav aria-label="Primary" className="shell flex h-16 items-center justify-between gap-6 lg:h-[4.5rem]">
           <a href="#top" className="group flex items-center gap-3" aria-label="Mohana Prasath G — back to top">
-            <Logo size={38} />
+            <Logo size={38} className="!h-8 !w-8 lg:!h-[38px] lg:!w-[38px]" />
             <span className="hidden flex-col leading-tight sm:flex">
               <span className="font-display text-[0.95rem] font-semibold tracking-[-0.01em] text-fg">Mohana Prasath G</span>
             </span>
@@ -107,7 +110,7 @@ export default function Navbar() {
             <button
               ref={toggleRef}
               type="button"
-              className="icon-btn lg:hidden"
+              className="icon-btn !h-10 !w-10 lg:hidden"
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? 'Close menu' : 'Open menu'}
@@ -130,40 +133,54 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 overflow-y-auto bg-canvas/95 pt-[4.5rem] backdrop-blur-xl lg:hidden"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 overflow-y-auto lg:hidden"
           >
-            <nav aria-label="Sections" className="shell flex min-h-full flex-col justify-between pb-10 pt-6">
-              <ol>
-                {sections.map((s, i) => (
-                  <motion.li
-                    key={s.id}
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.03 * i, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <a
-                      href={`#${s.id}`}
-                      onClick={() => setOpen(false)}
-                      aria-current={active === s.id ? 'true' : undefined}
-                      className="flex items-baseline gap-4 border-b border-fg/[0.07] py-3"
-                    >
-                      <span className="w-6 font-mono text-xs text-fg-dim">{String(i + 1).padStart(2, '0')}</span>
-                      <span className={`text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] ${active === s.id ? 'text-accent' : 'text-fg'}`}>
-                        {s.label}
-                      </span>
-                    </a>
-                  </motion.li>
-                ))}
-              </ol>
-              <div className="mt-10 flex flex-wrap gap-3">
-                {socials.map((s) => (
-                  <a key={s.id} href={s.href} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                    {s.label}
-                  </a>
-                ))}
+            <div aria-hidden="true" onClick={() => setOpen(false)} className="fixed inset-0 bg-canvas/70 backdrop-blur-sm" />
+            <motion.nav
+              aria-label="Sections"
+              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="shell relative pb-6 pt-[4.25rem]"
+            >
+              <div className="panel origin-top !bg-surface p-2.5">
+                <ol className="grid grid-cols-2 gap-1">
+                  {sections.map((s, i) => {
+                    const isActive = active === s.id
+                    return (
+                      <li key={s.id}>
+                        <a
+                          href={`#${s.id}`}
+                          onClick={() => setOpen(false)}
+                          aria-current={isActive ? 'true' : undefined}
+                          className={`flex items-baseline gap-2.5 rounded-xl px-3 py-2.5 transition-colors duration-200 ${
+                            isActive ? 'bg-accent/[0.1] text-accent' : 'text-fg hover:bg-fg/[0.04]'
+                          }`}
+                        >
+                          <span className={`font-mono text-[0.6rem] ${isActive ? 'text-accent/70' : 'text-fg-dim'}`}>{String(i + 1).padStart(2, '0')}</span>
+                          <span className="font-display text-[0.98rem] font-medium">{s.label}</span>
+                        </a>
+                      </li>
+                    )
+                  })}
+                </ol>
+                <div className="mt-2 flex items-center justify-between border-t border-fg/[0.07] px-1 pt-2.5">
+                  <span className="pl-2 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-fg-dim">Profiles</span>
+                  <div className="flex gap-2">
+                    {socials.map((s) => {
+                      const Icon = socialIcons[s.id]
+                      return (
+                        <a key={s.id} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={`${s.label} (opens in new tab)`} className="icon-btn !h-9 !w-9">
+                          {Icon ? <Icon aria-hidden="true" size={15} /> : <span aria-hidden="true" className="font-mono text-[0.6rem]">{s.label.slice(0, 2)}</span>}
+                        </a>
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
-            </nav>
+            </motion.nav>
           </motion.div>
         )}
       </AnimatePresence>

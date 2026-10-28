@@ -1,81 +1,140 @@
-# Mohana Prasath G — Portfolio
+<div align="center">
 
-Personal portfolio website showcasing projects, achievements, research, and leadership experience.
+<img src="public/logo.svg" width="72" alt="Logo" />
 
-**Live:** [mohana-prasath-2005.github.io/portfolio](https://mohana-prasath-2005.github.io/portfolio/)
+# Mohana Prasath G
 
-## Tech Stack
+**Software Engineer @ Open Fabric** · backend systems in fintech, computer vision and multimodal AI
 
-- **React 18** + **Vite 6**
-- **Tailwind CSS 3** — single dark design system driven by tokens in `src/index.css`
-- **Three.js + React Three Fiber** — persistent 3D environment (lazy-loaded)
-- **Framer Motion 11** — reveals, tabs and scroll-linked effects
-- **Lenis** — smooth scrolling (desktop, fine pointers only)
-- **React Icons** — Simple Icons / Tabler marks for the tech stack
+A portfolio that renders its owner as a **real-time 3D hologram**, sets it in a living topographic world,
+and shows every project as an interactive dashboard instead of a screenshot.
 
-## Design
+[**Live site →**](https://mohana-prasath-2005.github.io/portfolio/)
 
-One dark theme only: obsidian background, charcoal surfaces with a top-lit edge, off-white type, an electric-cyan accent used sparingly and ice-blue highlights. Inter Tight for display and UI, JetBrains Mono for technical labels.
+![React](https://img.shields.io/badge/React_18-0b0d10?style=for-the-badge&logo=react&logoColor=2ee5ff)
+![Three.js](https://img.shields.io/badge/Three.js-0b0d10?style=for-the-badge&logo=threedotjs&logoColor=2ee5ff)
+![Vite](https://img.shields.io/badge/Vite_6-0b0d10?style=for-the-badge&logo=vite&logoColor=2ee5ff)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_3-0b0d10?style=for-the-badge&logo=tailwindcss&logoColor=2ee5ff)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0b0d10?style=for-the-badge&logo=framer&logoColor=2ee5ff)
+![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-0b0d10?style=for-the-badge&logo=github&logoColor=2ee5ff)
 
-## Features
+<img src="docs/desktop.jpg" alt="Hero: a 3D hologram portrait on a projector base beside the name and role" width="100%" />
 
-- **3D environment** behind the whole page: a procedural terrain drawn as topographic contour lines, a pointer-following light pool, and the camera gliding along the valley as you scroll
-- **System stack** in the hero: the README's six technology layers as lit slabs with one module per tool (26), joined by data buses carrying packets; hover/tap a layer, or use the HTML layer picker, to inspect it
-- **Case-file project showcase** with accessible tabs and an interactive architecture flow per project (built only from facts in the project/repo descriptions)
-- **Tech arsenal** as circuit rails, one per layer, sourced from the GitHub profile README
-- Loads text first; the WebGL chunk mounts on idle and falls back to a static backdrop without WebGL
-- Reduced motion: no smooth scroll or cursor follower, static 3D render, no animated packets
-- Accessible mobile menu, skip link, visible focus states, copy-to-clipboard email
+</div>
 
-## Sections
+---
 
-1. **Hero** — portrait, name, role, highlights, stack inspector
-2. **About** — statement and spec sheet
-3. **Stack** — 26 tools across 6 layers
-4. **Work** — VISION X, Transaction Reconciliation, IoT Robot Car
-5. **Research** — papers, hackathons, other builds
-6. **Journey** — Open Fabric, NIT Trichy, education (CGPA 9.2, semester chart), certifications
-7. **Leadership** — roles timeline
-8. **Awards** — honours and competition record
-9. **Contact** — email, phone, profiles
+## ✦ What makes it different
 
-## Project Structure
+| | |
+|---|---|
+| **Holographic portrait** | A single photo turned into thousands of engraved scan-line points with real depth. A projector base, light cone, rising particles, an orbit ring and a sweeping scan beam complete the hologram. It turns toward your cursor, and the points part around it. |
+| **A world behind the page** | A procedural terrain drawn as topographic contour lines. The camera glides along its valley as you scroll, and a pool of light follows the pointer. |
+| **Projects you can use** | VISION X has a detection dashboard with a working confidence-threshold slider. The reconciliation engine runs a live matching pass that you can re-run. The robot car plays real footage of each control mode. |
+| **One source of truth** | Every word on the site lives in [`src/data/profile.js`](src/data/profile.js). Change the content without touching a component. |
+
+<div align="center">
+<img src="docs/work.jpg" alt="VISION X detection dashboard with bounding boxes, metrics and a confidence slider" width="74%" />
+&nbsp;
+<img src="docs/mobile.jpg" alt="Mobile hero with the hologram above the name" width="22%" />
+</div>
+
+---
+
+## ✦ How the hologram is built
+
+There is no 3D model. The portrait is reconstructed in the browser from the 2D image on every load:
+
+```mermaid
+flowchart LR
+    A[avatar.jpg] --> B[Texture energy<br/>separates figure from backdrop]
+    B --> C[Tone map<br/>global levels + local contrast]
+    B --> D[Volume<br/>rounded depth grown from the silhouette]
+    C --> E[Engraved scan lines<br/>point size follows brightness]
+    D --> E
+    E --> F[Shader<br/>rim light · scan band · glitch slices · pointer push]
+    F --> G[Hologram rig<br/>projector rings · light cone · particles · orbit]
+```
+
+All of it is in [`src/three/Portrait.jsx`](src/three/Portrait.jsx). Add `?portrait=dots`, `?portrait=scan` or `?portrait=pins` to the URL to compare other renderings of the same data.
+
+---
+
+## ✦ Sections
+
+| # | Section | Highlights |
+|---|---|---|
+| 01 | **About** | Scroll-resolving statement, spec sheet, the areas of work at Open Fabric |
+| 02 | **Stack** | 26 tools across 6 layers |
+| 03 | **Work** | VISION X · Transaction Reconciliation · 3-in-1 IoT Robot Car · CSE Department site |
+| 04 | **Research** | Two multimodal emotion-recognition papers with animated method diagrams, plus hackathons |
+| 05 | **Journey** | Open Fabric progression, NIT Trichy, CGPA 9.2 with a semester chart, credentials |
+| 06 | **Leadership** | A staircase of roles on desktop; an expandable timeline on mobile |
+| 07 | **Awards** | ISTE Chapter Best Student Award, departmental honours, competition record |
+| 08 | **Contact** | Email, phone and profiles |
+
+---
+
+## ✦ Built to be fast and inclusive
+
+- **Text first.** The WebGL bundle loads lazily when the browser is idle. Without WebGL, a static backdrop takes its place.
+- **Loads on demand.** Project videos load and play only when scrolled into view, and pause when they leave it.
+- **Reduced motion respected.** No smooth scroll or cursor follower, a still 3D frame, and dashboards that show their final state.
+- **Accessible.** Skip link, visible focus, a focus-trapped mobile menu, ARIA on interactive visuals, and text alternatives for every diagram.
+- **Responsive.** Tested down to 320 px. The 3D scene repositions itself for phones.
+
+---
+
+## ✦ Tech
+
+| Layer | Tools |
+|---|---|
+| UI | React 18, Tailwind CSS 3 (tokens in `src/index.css`), Framer Motion 11 |
+| 3D | Three.js, React Three Fiber, custom GLSL shaders |
+| Motion | Lenis smooth scroll, scroll-linked transforms |
+| Type | Chakra Petch (display), JetBrains Mono (body) |
+| Build & ship | Vite 6, `gh-pages` |
+
+---
+
+## ✦ Project map
 
 ```
 src/
-├── App.jsx                 # Layout: world stage, nav, sections, footer
-├── index.css               # Design tokens and shared component styles
-├── data/profile.js         # All portfolio content (single source of truth)
-├── assets/avatar.jpg       # Optimised portrait
+├── App.jsx                  # Page layout: 3D stage, nav, sections, footer
+├── index.css                # Design tokens + shared component styles
+├── data/profile.js          # ★ All content: edit this to update the site
 ├── three/
-│   ├── WorldStage.jsx      # WebGL detection, idle lazy-load, fallback
-│   ├── World.jsx           # Terrain, motes, camera rig, stack placement
-│   ├── Stack.jsx           # The 6-layer system stack (materials, buses, packets)
-│   └── store.js            # Shared layer-selection state (HTML ↔ WebGL)
-├── hooks/                  # useMediaQuery, useActiveSection
-└── components/             # Hero, About, Skills, Projects (+ SystemFlow), Innovation,
-                            # Journey (+ AcademicExcellence, Certifications), Leadership,
-                            # IsteAward, CompetitionWins, Contact, Footer, Navbar, Avatar, ui/*
+│   ├── WorldStage.jsx       # WebGL check, idle lazy-load, fallback
+│   ├── World.jsx            # Terrain, motes, scroll-driven camera rig
+│   ├── Portrait.jsx         # Image → hologram pipeline and rig
+│   └── store.js             # Tiny store shared by HTML and WebGL
+├── components/
+│   ├── Hero · About · Skills · Projects · Innovation
+│   ├── Journey · Certifications · Leadership · IsteAward · Contact
+│   ├── ProjectVisuals.jsx   # VISION X + reconciliation dashboards, robot video, site screens
+│   ├── Navbar · Footer · Logo · CustomCursor · MagneticButton
+│   └── ui/                  # SectionHeader, Reveal
+└── hooks/                   # useActiveSection, useMediaQuery
 ```
 
-To change content, edit `src/data/profile.js`.
+---
 
-## Getting Started
+## ✦ Run it
 
 ```bash
-# Install dependencies
 npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
-
-# Deploy to GitHub Pages
-npm run deploy
+npm run dev       # http://localhost:5173/portfolio/
+npm run build     # production build in dist/
+npm run deploy    # build and publish to the gh-pages branch
 ```
 
-## Deployment
+Deployment targets GitHub Pages with `base: '/portfolio/'` (see `vite.config.js`).
 
-Configured for GitHub Pages with `base: '/portfolio/'` in `vite.config.js`. The `npm run deploy` command builds and pushes to the `gh-pages` branch.
+---
+
+<div align="center">
+
+**[GitHub](https://github.com/Mohana-Prasath-2005)** · **[LinkedIn](https://www.linkedin.com/in/mohana-prasath-g-279139267/)** · **[LeetCode](https://leetcode.com/u/MOHAN-2005/)** · **[Email](mailto:mohanaprasath8917@gmail.com)**
+
+</div>
