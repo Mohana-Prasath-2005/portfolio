@@ -1,100 +1,60 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import useMediaQuery from '../hooks/useMediaQuery'
 
+// A soft ring that trails the (still visible) native cursor and grows over
+// interactive elements. Fine pointers only; disabled for reduced motion.
 export default function CustomCursor() {
-  const dotRef = useRef(null)
+  const enabled = useMediaQuery('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
   const ringRef = useRef(null)
-  const [isHovering, setIsHovering] = useState(false)
-  const [isClicking, setIsClicking] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Hide on touch devices
-    if ('ontouchstart' in window) return
-
-    const dot = dotRef.current
     const ring = ringRef.current
-    if (!dot || !ring) return
+    if (!enabled || !ring) return
 
-    let mouseX = 0, mouseY = 0
-    let ringX = 0, ringY = 0
+    let x = -100, y = -100, rx = -100, ry = -100
+    let frame = 0
+    let running = false
 
-    const onMouseMove = (e) => {
-      mouseX = e.clientX
-      mouseY = e.clientY
-      dot.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`
-      if (!isVisible) setIsVisible(true)
+    const loop = () => {
+      rx += (x - rx) * 0.2
+      ry += (y - ry) * 0.2
+      ring.style.transform = `translate3d(${rx}px, ${ry}px, 0)`
+      if (Math.abs(x - rx) + Math.abs(y - ry) > 0.1) {
+        frame = requestAnimationFrame(loop)
+      } else {
+        running = false
+      }
+    }
+    const kick = () => {
+      if (!running) {
+        running = true
+        frame = requestAnimationFrame(loop)
+      }
     }
 
-    const onMouseDown = () => setIsClicking(true)
-    const onMouseUp = () => setIsClicking(false)
-    const onMouseLeave = () => setIsVisible(false)
-    const onMouseEnter = () => setIsVisible(true)
-
-    // Detect hovering on interactive elements
-    const onMouseOver = (e) => {
-      const target = e.target.closest('a, button, [role="button"], input, textarea, .cursor-hover')
-      setIsHovering(!!target)
+    const onMove = (e) => {
+      x = e.clientX
+      y = e.clientY
+      ring.style.opacity = '1'
+      kick()
     }
-
-    // Smooth ring follow
-    const animate = () => {
-      ringX += (mouseX - ringX) * 0.15
-      ringY += (mouseY - ringY) * 0.15
-      ring.style.transform = `translate(${ringX - 20}px, ${ringY - 20}px)`
-      requestAnimationFrame(animate)
+    const onOver = (e) => {
+      const hit = e.target.closest?.('a, button, [role="button"], summary, label, input, textarea')
+      ring.dataset.active = hit ? 'true' : 'false'
     }
+    const onLeave = () => { ring.style.opacity = '0' }
 
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mousedown', onMouseDown)
-    window.addEventListener('mouseup', onMouseUp)
-    window.addEventListener('mouseover', onMouseOver)
-    document.documentElement.addEventListener('mouseleave', onMouseLeave)
-    document.documentElement.addEventListener('mouseenter', onMouseEnter)
-
-    const animId = requestAnimationFrame(animate)
-
+    window.addEventListener('pointermove', onMove, { passive: true })
+    window.addEventListener('pointerover', onOver, { passive: true })
+    document.documentElement.addEventListener('pointerleave', onLeave)
     return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mousedown', onMouseDown)
-      window.removeEventListener('mouseup', onMouseUp)
-      window.removeEventListener('mouseover', onMouseOver)
-      document.documentElement.removeEventListener('mouseleave', onMouseLeave)
-      document.documentElement.removeEventListener('mouseenter', onMouseEnter)
-      cancelAnimationFrame(animId)
+      cancelAnimationFrame(frame)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerover', onOver)
+      document.documentElement.removeEventListener('pointerleave', onLeave)
     }
-  }, [isVisible])
+  }, [enabled])
 
-  // Don't render on touch devices
-  if (typeof window !== 'undefined' && 'ontouchstart' in window) return null
-
-  return (
-    <>
-      {/* Dot */}
-      <div
-        ref={dotRef}
-        className="cursor-dot"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          width: isClicking ? '6px' : '8px',
-          height: isClicking ? '6px' : '8px',
-        }}
-      />
-      {/* Ring */}
-      <div
-        ref={ringRef}
-        className="cursor-ring"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          width: isHovering ? '60px' : '40px',
-          height: isHovering ? '60px' : '40px',
-          borderColor: isHovering
-            ? 'rgba(6, 182, 212, 0.6)'
-            : 'rgba(6, 182, 212, 0.3)',
-          background: isHovering
-            ? 'rgba(6, 182, 212, 0.05)'
-            : 'transparent',
-        }}
-      />
-    </>
-  )
+  if (!enabled) return null
+  return <div ref={ringRef} className="cursor-ring" style={{ opacity: 0 }} aria-hidden="true" />
 }

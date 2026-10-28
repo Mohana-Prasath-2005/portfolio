@@ -1,35 +1,44 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
+// Pulls its content toward the pointer on fine-pointer devices. Writes transforms
+// directly to the element so pointer movement never re-renders React.
 export default function MagneticButton({ children, className = '', as: Tag = 'button', strength = 0.3, ...props }) {
   const ref = useRef(null)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
 
-  const handleMouseMove = (e) => {
-    if (!ref.current) return
-    const rect = ref.current.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-    const deltaX = (e.clientX - centerX) * strength
-    const deltaY = (e.clientY - centerY) * strength
-    setPosition({ x: deltaX, y: deltaY })
-  }
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!fine || reduced) return
 
-  const handleMouseLeave = () => {
-    setPosition({ x: 0, y: 0 })
-  }
+    let frame = 0
+    const onMove = (e) => {
+      const rect = el.getBoundingClientRect()
+      const x = (e.clientX - (rect.left + rect.width / 2)) * strength
+      const y = (e.clientY - (rect.top + rect.height / 2)) * strength
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        el.style.transition = 'transform 0.15s ease-out'
+        el.style.transform = `translate3d(${x}px, ${y}px, 0)`
+      })
+    }
+    const onLeave = () => {
+      cancelAnimationFrame(frame)
+      el.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+      el.style.transform = 'translate3d(0, 0, 0)'
+    }
+    el.addEventListener('pointermove', onMove)
+    el.addEventListener('pointerleave', onLeave)
+    return () => {
+      cancelAnimationFrame(frame)
+      el.removeEventListener('pointermove', onMove)
+      el.removeEventListener('pointerleave', onLeave)
+    }
+  }, [strength])
 
   return (
-    <Tag
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={className}
-      style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
-        transition: position.x === 0 ? 'transform 0.5s ease-out' : 'transform 0.15s ease-out',
-      }}
-      {...props}
-    >
+    <Tag ref={ref} className={className} {...props}>
       {children}
     </Tag>
   )
