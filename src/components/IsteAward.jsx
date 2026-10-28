@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { animate, useInView, useReducedMotion } from 'framer-motion'
+import { TbAward, TbTrophy } from 'react-icons/tb'
 import SectionHeader from './ui/SectionHeader'
 import Reveal from './ui/Reveal'
 import { awards, competitionStats, keyWins } from '../data/profile'
@@ -59,51 +60,81 @@ const FILTERS = [
   { id: '2nd', label: '2nd place' },
 ]
 
+// Honours after the headline one; awards won in several years share one card.
+function groupHonours(list) {
+  const out = []
+  for (const a of list) {
+    const g = out.find((x) => x.title === a.title)
+    if (g) g.years.push(a.year)
+    else out.push({ ...a, years: [a.year] })
+  }
+  out.forEach((g) => g.years.sort())
+  return out
+}
+
+const HONOUR_ICONS = [TbTrophy, TbAward]
+
 export default function IsteAward() {
   const [featured, ...rest] = awards
-  const years = [...new Set(rest.map((a) => a.year))].sort().reverse()
+  const honours = groupHonours(rest)
   const [filter, setFilter] = useState('all')
   const wins = keyWins.filter((w) => filter === 'all' || w.prize === filter)
 
   return (
     <section id="awards" tabIndex={-1} aria-labelledby="awards-title" className="section">
       <div className="shell">
-        <SectionHeader index="07" label="Awards & recognitions" id="awards-title" title="Recognition" lede="ISTE Tamilnadu Section and Nandha Engineering College." />
+        <SectionHeader index="07" label="Awards & recognitions" id="awards-title" title="Honours & recognition" lede="A state-level honour from ISTE Tamilnadu Section, and departmental awards across consecutive years." />
 
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
-          {/* Headline honour */}
-          <Reveal className="lg:col-span-5">
-            <article className="relative">
-              <div className="mx-auto w-48 sm:w-56 lg:mx-0">
+        {/* Headline honour */}
+        <Reveal>
+          <article className="panel reg relative overflow-hidden p-6 sm:p-8 lg:p-10">
+            <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/[0.08] blur-3xl" />
+            <div className="relative grid items-center gap-8 md:grid-cols-[13rem_1fr] lg:grid-cols-[15rem_1fr] lg:gap-12">
+              <div className="mx-auto w-44 sm:w-52 md:mx-0 md:w-full">
                 <Seal />
               </div>
-              <p className="mt-6 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-accent">{featured.label} · highest honour</p>
-              <h3 className="mt-3 text-[1.9rem] font-semibold tracking-[-0.03em] text-fg sm:text-[2.3rem]">{featured.title}</h3>
-              <p className="mt-2 text-signal">{featured.org}</p>
-              <p className="mt-4 leading-relaxed text-fg-muted">{featured.description}</p>
-            </article>
-          </Reveal>
+              <div>
+                <p className="inline-flex items-center gap-2 rounded-full bg-accent/[0.1] px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-accent">
+                  <span className="anim-pulse h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+                  Highest honour · {featured.label}
+                </p>
+                <h3 className="mt-4 text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.03em] text-fg sm:text-[2.4rem]">{featured.title}</h3>
+                <p className="mt-2 font-mono text-sm text-signal">{featured.org} · {featured.year}</p>
+                <p className="mt-4 max-w-[40rem] leading-relaxed text-fg-muted">{featured.description}</p>
+              </div>
+            </div>
+          </article>
+        </Reveal>
 
-          {/* Timeline of other honours */}
-          <div className="lg:col-span-7">
-            {years.map((year) => (
-              <Reveal key={year} className="grid grid-cols-[4.5rem_1fr] gap-4 sm:grid-cols-[6rem_1fr]">
-                <p className="pt-5 font-display text-2xl font-semibold tracking-[-0.03em] text-fg-dim">{year}</p>
-                <ol className="border-l border-fg/[0.1]">
-                  {rest.filter((a) => a.year === year).map((a) => (
-                    <li key={a.id} className="group relative py-5 pl-6">
-                      <span aria-hidden="true" className="absolute -left-[5px] top-7 h-[9px] w-[9px] rotate-45 bg-canvas shadow-[inset_0_0_0_1.5px_rgb(var(--accent))] transition-colors duration-300 group-hover:bg-accent" />
-                      <p className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-fg-dim">{a.label}</p>
-                      <h3 className="mt-1.5 text-xl font-semibold tracking-[-0.02em] text-fg">{a.title}</h3>
-                      <p className="mt-0.5 text-sm text-signal">{a.org}</p>
-                      <p className="mt-2 max-w-[38rem] text-[0.95rem] leading-relaxed text-fg-muted">{a.description}</p>
-                    </li>
-                  ))}
-                </ol>
+        {/* Other honours */}
+        <ul className="mt-5 grid gap-5 md:grid-cols-2">
+          {honours.map((a, i) => {
+            const Icon = HONOUR_ICONS[i % HONOUR_ICONS.length]
+            const repeat = a.years.length > 1
+            const consecutive = a.years.every((y, k) => k === 0 || +y === +a.years[k - 1] + 1)
+            return (
+              <Reveal as="li" key={a.id} delay={i * 0.06} className="panel group relative flex flex-col overflow-hidden p-6 sm:p-7">
+                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
+                <div className="flex items-start justify-between gap-4">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent/[0.08] text-accent shadow-[inset_0_0_0_1px_rgb(var(--accent)/0.3)]" aria-hidden="true">
+                    <Icon size={20} />
+                  </span>
+                  <span className="flex flex-wrap justify-end gap-1.5">
+                    {a.years.map((y) => (
+                      <span key={y} className="rounded-full bg-fg/[0.06] px-2.5 py-0.5 font-mono text-[0.68rem] text-fg-muted">{y}</span>
+                    ))}
+                  </span>
+                </div>
+                <p className="mt-5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-fg-dim">
+                  {repeat ? `${a.org} · ${a.years.length}× ${consecutive ? 'consecutive' : 'winner'}` : a.label}
+                </p>
+                <h3 className="mt-1.5 text-xl font-semibold tracking-[-0.02em] text-fg sm:text-[1.4rem]">{a.title}</h3>
+                {!repeat && <p className="mt-0.5 font-mono text-sm text-signal">{a.org}</p>}
+                <p className="mt-3 text-[0.92rem] leading-relaxed text-fg-muted">{a.description}</p>
               </Reveal>
-            ))}
-          </div>
-        </div>
+            )
+          })}
+        </ul>
 
         {/* Competition record */}
         <div className="mt-14 border-t border-fg/[0.08] pt-10">
@@ -150,7 +181,6 @@ export default function IsteAward() {
                   <th scope="col" className="w-20 py-2 font-normal">Place</th>
                   <th scope="col" className="py-2 font-normal">Event</th>
                   <th scope="col" className="py-2 font-normal">Venue</th>
-                  <th scope="col" className="w-16 py-2 text-right font-normal">Year</th>
                 </tr>
               </thead>
               <tbody>
@@ -163,10 +193,9 @@ export default function IsteAward() {
                     </td>
                     <td className="py-3.5 pr-3 align-top">
                       <span className="text-[0.95rem] text-fg">{w.event}</span>
-                      <span className="mt-0.5 block text-sm text-fg-dim sm:hidden">{w.venue}{w.year ? ` · ${w.year}` : ''}</span>
+                      <span className="mt-0.5 block text-sm text-fg-dim sm:hidden">{w.venue}</span>
                     </td>
-                    <td className="hidden py-3.5 pr-3 align-top text-sm text-fg-muted sm:table-cell">{w.venue}</td>
-                    <td className="hidden py-3.5 text-right align-top font-mono text-sm text-fg-dim sm:table-cell">{w.year || '—'}</td>
+                    <td className="hidden py-3.5 align-top text-sm text-fg-muted sm:table-cell">{w.venue}</td>
                   </tr>
                 ))}
               </tbody>

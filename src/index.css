@@ -252,6 +252,14 @@ a:hover .logo-trace, a:focus-visible .logo-trace { animation: trace 0.9s cubic-b
 
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 
+/* Hero role badge: a highlight travels around the 1px border */
+@property --ring-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes ring-spin { to { --ring-angle: 360deg; } }
+.badge-ring {
+  background: conic-gradient(from var(--ring-angle), rgb(var(--accent) / 0.95), rgb(var(--fg) / 0.1) 22%, rgb(var(--fg) / 0.1) 62%, rgb(var(--signal) / 0.6) 84%, rgb(var(--accent) / 0.95));
+  animation: ring-spin 5s linear infinite;
+}
+
 /* Research method sketches */
 @keyframes attn { 0%, 100% { transform: scaleY(0.25); opacity: 0.45; } 50% { transform: scaleY(1); opacity: 1; } }
 .anim-attn { animation: attn 2.4s ease-in-out infinite; }

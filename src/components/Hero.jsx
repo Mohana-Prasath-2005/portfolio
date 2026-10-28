@@ -3,7 +3,6 @@ import { TbArrowDownRight, TbArrowUpRight } from 'react-icons/tb'
 import { FaGithub, FaLinkedin } from 'react-icons/fa'
 import { SiLeetcode } from 'react-icons/si'
 import MagneticButton from './MagneticButton'
-import Avatar from './Avatar'
 import { person, socials, highlights } from '../data/profile'
 
 const EASE = [0.16, 1, 0.3, 1]
@@ -18,24 +17,25 @@ const rise = (delay) => ({
 export default function Hero() {
   return (
     <section id="top" tabIndex={-1} aria-labelledby="hero-title" className="relative flex min-h-[100svh] flex-col">
-      <div className="shell flex flex-1 flex-col justify-end pb-6 pt-[44svh] lg:justify-center lg:pb-12 lg:pt-28">
+      <div className="shell flex flex-1 flex-col justify-end pb-6 pt-[49svh] lg:justify-center lg:pb-12 lg:pt-28">
         <div className="max-w-[46rem]">
-          <motion.div {...rise(0)} className="flex items-center gap-5">
-            <Avatar size="sm" tilt className="w-24 flex-shrink-0 sm:w-28 lg:w-36" />
-            <div className="min-w-0">
-              <p className="inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-accent">
-                <span className="anim-pulse h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-                {person.role}
-              </p>
-              <p className="mt-2 text-base text-fg sm:text-lg">@ {person.company}</p>
-            </div>
-          </motion.div>
-
-          <h1 id="hero-title" className="mt-8 whitespace-nowrap font-display text-[clamp(1.6rem,9.2vw,3.6rem)] font-bold leading-[1] tracking-[-0.04em] lg:text-[clamp(3rem,4.6vw,5rem)]">
+          <h1 id="hero-title" className="whitespace-nowrap font-display text-[clamp(1.6rem,9.2vw,3.6rem)] font-bold leading-[1] tracking-[-0.04em] lg:text-[clamp(3rem,4.6vw,5rem)]">
             <motion.span {...rise(0.08)} className="text-ice inline-block pb-[0.06em]">Mohana Prasath G</motion.span>
           </h1>
 
-          <motion.p {...rise(0.24)} className="mt-7 max-w-[36rem] text-[1.05rem] leading-relaxed text-fg-muted sm:text-lg">
+          {/* Role badge: a light trace circles the border */}
+          <motion.p {...rise(0.16)} className="badge-ring mt-5 inline-flex max-w-full rounded-full p-px shadow-[0_0_28px_-8px_rgb(var(--accent)/0.6)]">
+            <span className="inline-flex min-w-0 items-center gap-2 rounded-full bg-canvas/90 py-1.5 pl-1.5 pr-4 backdrop-blur sm:gap-3 sm:pr-5">
+              <span className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-full bg-accent/[0.12]" aria-hidden="true">
+                <span className="anim-pulse h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_rgb(var(--accent))]" />
+              </span>
+              <span className="whitespace-nowrap font-display text-[clamp(0.76rem,3.6vw,0.88rem)] font-semibold tracking-[-0.01em] text-fg sm:text-[1.05rem]">
+                {person.role} <span className="px-0.5 font-mono font-normal text-accent">@</span> <span className="text-ice">{person.company}</span>
+              </span>
+            </span>
+          </motion.p>
+
+          <motion.p {...rise(0.24)} className="mt-6 max-w-[36rem] text-[1.05rem] leading-relaxed text-fg-muted sm:text-lg">
             {person.intro}
           </motion.p>
 
