@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`
+
 export default {
   content: [
     "./index.html",
@@ -6,43 +8,36 @@ export default {
   ],
   theme: {
     extend: {
+      // All colors come from the design tokens in src/index.css (:root)
       colors: {
-        primary: '#06b6d4',
-        accent: '#8b5cf6',
-        dark: {
-          900: '#030014',
-          800: '#0a0a1a',
-          700: '#111127',
-          600: '#1a1a2e',
-          500: '#16213e',
+        canvas: token('canvas'),
+        surface: token('surface'),
+        raised: token('raised'),
+        fg: {
+          DEFAULT: token('fg'),
+          muted: token('fg-muted'),
+          dim: token('fg-dim'),
         },
+        accent: {
+          DEFAULT: token('accent'),
+          soft: token('accent-soft'),
+        },
+        signal: token('signal'),
+        warm: token('warm'),
+        display: token('display'),
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        // Technical type system: squared display face + monospace for everything else
+        display: ['"Chakra Petch"', '"JetBrains Mono"', 'system-ui', 'sans-serif'],
+        sans: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
-      animation: {
-        'gradient': 'gradient 8s ease infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate',
+      maxWidth: {
+        shell: '80rem',
       },
-      keyframes: {
-        gradient: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
-        },
-        glow: {
-          '0%': { boxShadow: '0 0 20px rgba(6, 182, 212, 0.1)' },
-          '100%': { boxShadow: '0 0 40px rgba(6, 182, 212, 0.3)' },
-        },
-      },
-      backgroundSize: {
-        '300%': '300%',
+      boxShadow: {
+        panel: 'var(--shadow-panel)',
+        lift: 'var(--shadow-lift)',
       },
     },
   },
