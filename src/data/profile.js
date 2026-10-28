@@ -174,6 +174,11 @@ export const experience = [
     detail: 'Backend systems for card issuing and payments infrastructure.',
     tags: [],
     current: true,
+    // Progression at the company, most recent first
+    positions: [
+      { title: 'Software Engineer', period: 'Jun 2026 – Present', current: true },
+      { title: 'Software Engineer Intern', period: 'Oct 2025 – May 2026' },
+    ],
   },
   {
     org: 'NIT Trichy',
