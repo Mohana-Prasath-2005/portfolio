@@ -6,7 +6,7 @@
 
 **Software Engineer @ Open Fabric** · fintech backend · computer vision · multimodal AI
 
-[**mohana-prasath-2005.github.io/portfolio**](https://mohana-prasath-2005.github.io/portfolio/)
+<a href="https://mohana-prasath-2005.github.io/portfolio/"><img src="https://img.shields.io/badge/View_live_site-%E2%86%92-2ee5ff?style=for-the-badge&labelColor=0b0d10" alt="View live site" height="36" /></a>
 
 <img src="docs/desktop.jpg" alt="Portfolio hero: a 3D hologram portrait beside the name and role" width="100%" />
 
@@ -34,11 +34,3 @@ It loads text first, falls back gracefully without WebGL, respects reduced motio
 npm install
 npm run dev
 ```
-
-All content lives in [`src/data/profile.js`](src/data/profile.js). `npm run deploy` publishes to GitHub Pages.
-
-<div align="center">
-
-[GitHub](https://github.com/Mohana-Prasath-2005) · [LinkedIn](https://www.linkedin.com/in/mohana-prasath-g-279139267/) · [LeetCode](https://leetcode.com/u/MOHAN-2005/) · [Email](mailto:mohanaprasath8917@gmail.com)
-
-</div>
