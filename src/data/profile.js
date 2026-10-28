@@ -37,8 +37,8 @@ export const socials = [
 
 // From the README profile header / signal strip
 export const spec = [
+  { label: 'Domain', value: 'Fintech · payments & card issuing' },
   { label: 'Exploring', value: 'System design · distributed systems' },
-  { label: 'Research', value: 'Multimodal emotion recognition' },
   { label: 'Education', value: 'B.E. CSE · Class of 2026' },
   { label: 'Base', value: 'Erode, India · IST' },
 ]
@@ -253,12 +253,6 @@ export const leadership = [
     period: '2022 – 2023',
     impact: 'Contributed to foundational departmental activities and technical event support from first year.',
   },
-  {
-    title: 'Board of Studies Member',
-    org: 'Dept. of CSE',
-    period: '2022 – 2026',
-    impact: 'Contributed to curriculum design and academic policy discussions for 4 consecutive years.',
-  },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -291,7 +285,7 @@ export const awards = [
     year: '2026',
     org: 'CSE Department',
     description:
-      'Awarded for the second consecutive year for outstanding contributions in co-curricular activities, leadership roles, and inter-college events.',
+      'Awarded in two consecutive years (2025 and 2026) for outstanding contributions in co-curricular activities, leadership roles, and inter-college events.',
   },
   {
     id: 'co-curricular-2025',
@@ -319,7 +313,7 @@ export const keyWins = [
   { prize: '2nd', event: 'Code Cracking — Java Programming', venue: 'GCE Erode' },
   { prize: '2nd', event: 'Python Quiz & Reasoning', venue: 'GCE Erode (IIC & ISTE)' },
   { prize: '2nd', event: 'The Brainiacs — Technical Quiz', venue: "syNECtics'24, NEC" },
-  { prize: '2nd', event: 'Math Quiz', venue: 'Nandha Engineering College', year: '2023' },
+  { prize: '2nd', event: 'Math Quiz', venue: 'Nandha Engineering College' },
 ]
 
 export const sections = [

@@ -24,11 +24,11 @@ export default function Projects() {
             const flip = i % 2 === 1
             return (
               <article key={p.id} aria-labelledby={`${p.id}-title`} className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-                <Reveal className={`lg:col-span-7 ${flip ? 'lg:order-2' : ''}`}>
+                <Reveal className={`min-w-0 lg:col-span-7 ${flip ? 'lg:order-2' : ''}`}>
                   <ProjectVisual kind={p.visual} />
                 </Reveal>
 
-                <Reveal delay={0.06} className={`lg:col-span-5 ${flip ? 'lg:order-1' : ''}`}>
+                <Reveal delay={0.06} className={`min-w-0 lg:col-span-5 ${flip ? 'lg:order-1' : ''}`}>
                   <div className="flex items-end gap-4">
                     <span
                       aria-hidden="true"

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { TbPlus } from 'react-icons/tb'
 import SectionHeader from './ui/SectionHeader'
 import Reveal from './ui/Reveal'
 import { leadership } from '../data/profile'
 
 const W = 1000
-const H = 380
+const H = 330
 const YEARS = [2022, 2023, 2024, 2025, 2026]
 const X = (year) => 70 + (year - 2022) * 215
 const role = (title) => leadership.find((r) => r.title === title)
@@ -17,14 +18,17 @@ const STEPS = [
   { ...role('Overall Students Joint Secretary'), from: 2024, to: 2025, y: 160 },
   { ...role('Student Secretary'), from: 2025, to: 2026, y: 95 },
   { ...role('Promotional Team Head'), from: 2025, to: 2026, y: 40, branch: true },
-  { ...role('Board of Studies Member'), from: 2022, to: 2026, y: 345, baseline: true },
 ]
+
+// Mobile timeline order: most recent first; within a year, the main staircase role before the branch
+const MOBILE_STEPS = [...STEPS].sort((a, b) => b.from - a.from || b.y - a.y)
 
 const stair = `M${X(2022)} 290 H${X(2023)} V225 H${X(2024)} V160 H${X(2025)} V95 H${X(2026)}`
 const branch = `M${X(2025)} 160 V40 H${X(2026)}`
 
 export default function Leadership() {
   const [active, setActive] = useState(3)
+  const [openStep, setOpenStep] = useState(MOBILE_STEPS[0].title)
   const current = STEPS[active]
 
   return (
@@ -35,7 +39,7 @@ export default function Leadership() {
           label="Leadership"
           id="leadership-title"
           title="Leadership, step by step"
-          lede="Four years at Nandha Engineering College — select a step to see what it involved."
+          lede="Four years at Nandha Engineering College — select a role to see what it involved."
         />
 
         {/* Staircase (md and up) */}
@@ -77,7 +81,7 @@ export default function Leadership() {
                   y1={s.y}
                   y2={s.y}
                   strokeLinecap="round"
-                  strokeWidth={i === active ? 6 : s.baseline ? 3 : 0}
+                  strokeWidth={i === active ? 6 : 0}
                   className={`transition-[stroke,stroke-width] duration-300 ${i === active ? 'stroke-accent' : 'stroke-fg/25'}`}
                   style={i === active ? { filter: 'drop-shadow(0 0 8px rgb(46 229 255 / 0.6))' } : undefined}
                 />
@@ -127,27 +131,59 @@ export default function Leadership() {
           </div>
         </Reveal>
 
-        {/* Stepped list (small screens) */}
-        <ol className="space-y-3 md:hidden">
-          {[...STEPS].sort((a, b) => a.y - b.y).map((s) => {
-            const level = s.baseline ? 0 : STEPS.filter((x) => !x.baseline && x.y >= s.y).length
-            return (
-              <Reveal as="li" key={s.title} className="panel p-5">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-end gap-0.5" aria-hidden="true">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <span key={n} className={`w-1.5 rounded-sm ${n <= level ? 'bg-accent' : 'bg-fg/[0.12]'}`} style={{ height: `${n * 4 + 2}px` }} />
-                    ))}
-                  </span>
-                  <span className="text-[0.66rem] uppercase tracking-[0.14em] text-fg-dim">{s.period}</span>
-                </div>
-                <h3 className="mt-3 text-lg font-semibold text-fg">{s.title}</h3>
-                <p className="text-[0.75rem] text-signal">{s.org}</p>
-                <p className="mt-2 text-[0.88rem] leading-relaxed text-fg-muted">{s.impact}</p>
-              </Reveal>
-            )
-          })}
-        </ol>
+        {/* Timeline (small screens): most recent first, tap a role to expand */}
+        <Reveal className="panel p-5 md:hidden">
+          <div className="mb-6 flex items-center justify-between font-mono text-[0.62rem] uppercase tracking-[0.16em] text-fg-dim">
+            <span>2022 → 2026</span>
+            <span>{STEPS.length} roles</span>
+          </div>
+          <ol className="relative">
+            <span aria-hidden="true" className="absolute bottom-3 left-[7px] top-2 w-px bg-gradient-to-b from-accent via-accent/30 to-fg/10" />
+            {MOBILE_STEPS.map((s, n) => {
+              const on = openStep === s.title
+              return (
+                <li key={s.title} className="relative pb-5 pl-8 last:pb-0">
+                  <span
+                    aria-hidden="true"
+                    className={`absolute left-0 top-[0.35rem] h-[15px] w-[15px] rounded-full border transition-all duration-300 ${
+                      on ? 'border-accent bg-accent shadow-[0_0_12px_rgb(var(--accent)/0.7)]' : n === 0 ? 'border-accent bg-canvas' : 'border-fg/30 bg-canvas'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setOpenStep(on ? null : s.title)}
+                    aria-expanded={on}
+                    aria-controls={on ? `lead-${n}` : undefined}
+                    className="flex w-full items-start justify-between gap-3 text-left"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-mono text-[0.62rem] uppercase tracking-[0.14em] text-fg-dim">{s.period}</span>
+                      <span className={`mt-1 block font-display text-[1.08rem] font-semibold leading-snug transition-colors duration-300 ${on ? 'text-accent' : 'text-fg'}`}>
+                        {s.title}
+                      </span>
+                      <span className="mt-0.5 block font-mono text-[0.72rem] text-signal">{s.org}</span>
+                    </span>
+                    <TbPlus aria-hidden="true" size={16} className={`mt-5 flex-shrink-0 text-fg-dim transition-transform duration-300 ${on ? 'rotate-45 text-accent' : ''}`} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {on && (
+                      <motion.p
+                        id={`lead-${n}`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <span className="block pt-2 text-[0.85rem] leading-relaxed text-fg-muted">{s.impact}</span>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </li>
+              )
+            })}
+          </ol>
+        </Reveal>
       </div>
     </section>
   )

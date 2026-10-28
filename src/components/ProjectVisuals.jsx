@@ -1,236 +1,262 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { FaBicycle, FaCarSide, FaPersonWalking } from 'react-icons/fa6'
+import { TbRefresh } from 'react-icons/tb'
 import cseHome from '../assets/cse-home.jpg'
 import cseEvents from '../assets/cse-events.jpg'
 
-const ACCENT = '#2ee5ff'
-const ICE = '#b8e6ff'
-const FG = '237,238,240'
-const ALERT = '#ff7a6b'
-const MONO = '500 11px "JetBrains Mono", ui-monospace, monospace'
+/* ------------------------------------------------------------------ */
+/* VISION X — the app's dashboard: detections on the feed, metrics,     */
+/* per-class counts and the confidence threshold (drag it to filter).   */
+/* ------------------------------------------------------------------ */
+const DETECTIONS = [
+  { cls: 'person', conf: 0.94, box: [8, 18, 13, 68], Icon: FaPersonWalking },
+  { cls: 'person', conf: 0.87, box: [24, 30, 10, 56], Icon: FaPersonWalking },
+  { cls: 'bicycle', conf: 0.72, box: [37, 56, 16, 30], Icon: FaBicycle },
+  { cls: 'car', conf: 0.91, box: [56, 46, 28, 38], Icon: FaCarSide },
+  { cls: 'person', conf: 0.61, box: [86, 32, 9, 50], Icon: FaPersonWalking },
+]
 
-/* ------------------------------------------------------------------ */
-/* Shared canvas loop: DPR-aware, pauses off screen, one frame for      */
-/* reduced motion, pointer position in CSS pixels.                      */
-/* ------------------------------------------------------------------ */
-function useCanvas(draw, deps = []) {
+function VisionDashboard() {
   const ref = useRef(null)
-  const pointer = useRef({ x: 0, y: 0, inside: false, clicks: [] })
-
+  const inView = useInView(ref, { once: true, amount: 0.4 })
+  const [threshold, setThreshold] = useState(0.5)
+  // stagger only the first reveal; threshold changes respond immediately
+  const revealed = useRef(false)
   useEffect(() => {
-    const canvas = ref.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let w = 0, h = 0, raf = 0, visible = false, t = 0, last = 0
-    const state = {}
+    if (!inView) return
+    const id = setTimeout(() => (revealed.current = true), 1200)
+    return () => clearTimeout(id)
+  }, [inView])
+  const visible = DETECTIONS.filter((d) => d.conf >= threshold)
+  const counts = Object.entries(
+    visible.reduce((acc, d) => ({ ...acc, [d.cls]: (acc[d.cls] || 0) + 1 }), {})
+  ).sort((x, y) => y[1] - x[1])
+  const max = Math.max(1, ...counts.map(([, n]) => n))
+  const kpis = [
+    { label: 'Tracked', value: visible.length },
+    { label: 'FPS', value: 30 },
+    { label: 'Classes', value: counts.length },
+  ]
 
-    const resize = () => {
-      const r = canvas.getBoundingClientRect()
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      w = r.width
-      h = r.height
-      canvas.width = Math.round(w * dpr)
-      canvas.height = Math.round(h * dpr)
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      if (reduced || !visible) frame(performance.now())
-    }
-    const frame = (now) => {
-      const dt = Math.min(0.05, last ? (now - last) / 1000 : 0.016)
-      last = now
-      t += reduced ? 0 : dt
-      ctx.clearRect(0, 0, w, h)
-      draw(ctx, { w, h, t: reduced ? 2.5 : t, dt: reduced ? 0 : dt, state, pointer: pointer.current, reduced })
-      pointer.current.clicks.length = 0
-      if (visible && !reduced) raf = requestAnimationFrame(frame)
-    }
-    const io = new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting
-      cancelAnimationFrame(raf)
-      last = 0
-      if (visible) raf = requestAnimationFrame(frame)
-    })
-    const ro = new ResizeObserver(resize)
-    const local = (e) => {
-      const r = canvas.getBoundingClientRect()
-      return { x: e.clientX - r.left, y: e.clientY - r.top }
-    }
-    const onMove = (e) => Object.assign(pointer.current, local(e), { inside: true })
-    const onLeave = () => (pointer.current.inside = false)
-    const onDown = (e) => {
-      const p = local(e)
-      Object.assign(pointer.current, p, { inside: true })
-      pointer.current.clicks.push(p)
-      if (reduced) frame(performance.now())
-    }
-    canvas.addEventListener('pointermove', onMove)
-    canvas.addEventListener('pointerleave', onLeave)
-    canvas.addEventListener('pointerdown', onDown)
-    ro.observe(canvas)
-    io.observe(canvas)
-    resize()
-    return () => {
-      cancelAnimationFrame(raf)
-      io.disconnect()
-      ro.disconnect()
-      canvas.removeEventListener('pointermove', onMove)
-      canvas.removeEventListener('pointerleave', onLeave)
-      canvas.removeEventListener('pointerdown', onDown)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
-
-  return ref
-}
-
-function Stage({ children, label, ratio = '16 / 10' }) {
   return (
-    <div className="panel reg relative overflow-hidden !rounded-[22px]" style={{ aspectRatio: ratio }} role="img" aria-label={label}>
-      {children}
+    <div ref={ref} className="panel reg relative overflow-hidden !rounded-[22px] p-4 sm:p-6">
+      <div className="flex items-center justify-between gap-3 font-mono text-[0.62rem] uppercase tracking-[0.16em]">
+        <span className="flex items-center gap-2 text-fg-dim">
+          <span className="anim-pulse h-1.5 w-1.5 rounded-full bg-[#ff7a6b]" aria-hidden="true" />
+          Live · webcam
+        </span>
+        <span className="text-fg-dim">yolov8n · &lt; 50 ms</span>
+      </div>
+
+      {/* Feed */}
+      <div
+        className="relative mt-3 aspect-[16/8] overflow-hidden rounded-xl bg-[#05080b] shadow-[inset_0_0_0_1px_rgb(var(--fg)/0.08)]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgb(var(--fg) / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--fg) / 0.04) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+        role="img"
+        aria-label={`Sample VISION X frame: ${visible.length} objects detected above ${Math.round(threshold * 100)}% confidence`}
+      >
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-accent/[0.06] to-transparent" />
+        {DETECTIONS.map((d, i) => {
+          const [x, y, w, h] = d.box
+          const on = d.conf >= threshold
+          return (
+            <motion.div
+              key={i}
+              aria-hidden="true"
+              initial={{ opacity: 0, scale: 1.15 }}
+              animate={inView ? { opacity: on ? 1 : 0.12, scale: 1 } : {}}
+              transition={{ duration: 0.45, delay: revealed.current ? 0 : 0.2 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute"
+              style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }}
+            >
+              <d.Icon className="absolute inset-[12%] h-[76%] w-[76%] text-signal/25" />
+              <span className={`absolute inset-0 rounded-[3px] border ${on ? 'border-accent/90' : 'border-dashed border-fg/40'}`} />
+              {on && (
+                <span className={`absolute bottom-full mb-px whitespace-nowrap ${x + w > 80 ? 'right-[-1px]' : 'left-[-1px]'} rounded-sm bg-accent px-1 font-mono text-[0.5rem] leading-[1.4] text-[#03141a] sm:text-[0.58rem]`}>
+                  {d.cls} {d.conf.toFixed(2)}
+                </span>
+              )}
+            </motion.div>
+          )
+        })}
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr]">
+        <div>
+          <dl className="grid grid-cols-3 gap-2">
+            {kpis.map((k) => (
+              <div key={k.label} className="flex flex-col-reverse rounded-xl bg-fg/[0.03] p-2.5 shadow-[inset_0_0_0_1px_rgb(var(--fg)/0.06)]">
+                <dt className="mt-0.5 font-mono text-[0.56rem] uppercase tracking-[0.12em] text-fg-dim">{k.label}</dt>
+                <dd className="font-display text-xl font-semibold tabular-nums text-fg">{k.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <label className="mt-3 block">
+            <span className="flex items-center justify-between font-mono text-[0.6rem] uppercase tracking-[0.12em] text-fg-dim">
+              Confidence threshold
+              <span className="tabular-nums text-accent">{threshold.toFixed(2)}</span>
+            </span>
+            <input
+              type="range"
+              min="0.3"
+              max="0.95"
+              step="0.05"
+              value={threshold}
+              onChange={(e) => setThreshold(parseFloat(e.target.value))}
+              className="mt-2 w-full accent-[rgb(var(--accent))]"
+            />
+          </label>
+        </div>
+        <div>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-fg-dim">Object counts</p>
+          <ul className="mt-2 space-y-1.5">
+            {counts.map(([cls, n]) => (
+              <li key={cls} className="grid grid-cols-[4.5rem_1fr_1.5rem] items-center gap-2 font-mono text-[0.7rem]">
+                <span className="text-fg-muted">{cls}</span>
+                <span className="h-1.5 overflow-hidden rounded-full bg-fg/[0.08]" aria-hidden="true">
+                  <span className="block h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${(n / max) * 100}%` }} />
+                </span>
+                <span className="text-right tabular-nums text-fg">{n}</span>
+              </li>
+            ))}
+            {!counts.length && <li className="font-mono text-[0.7rem] text-fg-dim">No objects above threshold</li>}
+          </ul>
+        </div>
+      </div>
     </div>
   )
 }
 
 /* ------------------------------------------------------------------ */
-/* VISION X — objects are detected, boxed, tracked and counted          */
+/* Reconciliation — a run that matches transactions to settlements      */
+/* and flags what doesn't line up. Runs once in view; can be re-run.    */
 /* ------------------------------------------------------------------ */
-function VisionSim() {
-  const ref = useCanvas((ctx, { w, h, t, dt, state, pointer }) => {
-    if (!state.objs) {
-      state.objs = Array.from({ length: 5 }, (_, i) => ({
-        x: (0.2 + i * 0.15) * w, y: (0.45 + (i % 2) * 0.25) * h,
-        vx: (i % 2 ? -1 : 1) * (24 + i * 9), vy: (i % 3 - 1) * 14,
-        r: 10 + (i % 3) * 5, bx: 0, by: 0, id: i + 1,
-      }))
-      state.objs.forEach((o) => { o.bx = o.x; o.by = o.y })
-      state.you = { bx: w / 2, by: h / 2 }
-    }
-    const horizon = h * 0.36
-    // perspective floor
-    ctx.strokeStyle = `rgba(${FG},0.07)`
-    ctx.lineWidth = 1
-    for (let i = -8; i <= 8; i++) {
-      ctx.beginPath(); ctx.moveTo(w / 2, horizon); ctx.lineTo(w / 2 + i * w * 0.16, h); ctx.stroke()
-    }
-    for (let i = 1; i < 9; i++) {
-      const y = horizon + (h - horizon) * Math.pow(i / 9, 1.8)
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke()
-    }
-    const objs = state.objs
-    const tracked = [...objs]
-    if (pointer.inside) tracked.push({ x: pointer.x, y: pointer.y, r: 16, you: true, ...state.you })
-    for (const o of objs) {
-      o.x += o.vx * dt; o.y += o.vy * dt
-      if (o.x < o.r || o.x > w - o.r) o.vx *= -1
-      if (o.y < horizon + o.r || o.y > h - o.r) o.vy *= -1
-      o.x = Math.min(w - o.r, Math.max(o.r, o.x)); o.y = Math.min(h - o.r, Math.max(horizon + o.r, o.y))
-    }
-    for (const o of tracked) {
-      const k = 1 - Math.exp(-dt * 10)
-      const target = o.you ? state.you : o
-      target.bx += (o.x - target.bx) * (dt ? k : 1)
-      target.by += (o.y - target.by) * (dt ? k : 1)
-      // object
-      const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r * 1.8)
-      g.addColorStop(0, o.you ? 'rgba(46,229,255,0.9)' : 'rgba(223,246,255,0.95)')
-      g.addColorStop(1, 'rgba(46,229,255,0)')
-      ctx.fillStyle = g
-      ctx.beginPath(); ctx.arc(o.x, o.y, o.r * 1.8, 0, Math.PI * 2); ctx.fill()
-      // box
-      const s = o.r * 1.7
-      const bx = target.bx - s, by = target.by - s
-      ctx.strokeStyle = o.you ? ACCENT : 'rgba(184,230,255,0.85)'
-      ctx.lineWidth = 1.25
-      ctx.strokeRect(bx, by, s * 2, s * 2)
-      const label = o.you ? 'you · tracked' : `obj ${String(o.id).padStart(2, '0')}`
-      ctx.font = MONO
-      const tw = ctx.measureText(label).width + 10
-      ctx.fillStyle = o.you ? ACCENT : 'rgba(184,230,255,0.9)'
-      ctx.fillRect(bx, by - 16, tw, 15)
-      ctx.fillStyle = '#05080a'
-      ctx.fillText(label, bx + 5, by - 5)
-    }
-    // scan line
-    const sy = horizon + ((t * 0.35) % 1) * (h - horizon)
-    const sg = ctx.createLinearGradient(0, sy - 30, 0, sy)
-    sg.addColorStop(0, 'rgba(46,229,255,0)'); sg.addColorStop(1, 'rgba(46,229,255,0.16)')
-    ctx.fillStyle = sg; ctx.fillRect(0, sy - 30, w, 30)
-    ctx.fillStyle = 'rgba(46,229,255,0.6)'; ctx.fillRect(0, sy, w, 1)
-    // HUD
-    ctx.font = MONO
-    ctx.fillStyle = ALERT
-    ctx.beginPath(); ctx.arc(22, 24, 4, 0, Math.PI * 2); ctx.fill()
-    ctx.fillStyle = `rgba(${FG},0.85)`
-    ctx.fillText('LIVE · 30 FPS · YOLOv8', 34, 28)
-    const count = `tracked ${tracked.length}`
-    ctx.fillText(count, w - ctx.measureText(count).width - 18, 28)
-  })
-  return (
-    <Stage label="Simulation of VISION X tracking and counting moving objects; your pointer is tracked too">
-      <canvas ref={ref} className="absolute inset-0 h-full w-full cursor-crosshair" />
-    </Stage>
-  )
+const RECON_ROWS = [
+  { id: 'TXN-80412', amount: 1240.0, settled: 1240.0 },
+  { id: 'TXN-80413', amount: 389.5, settled: 389.5 },
+  { id: 'TXN-80414', amount: 2105.75, settled: 2085.75 },
+  { id: 'TXN-80415', amount: 76.2, settled: 76.2 },
+  { id: 'TXN-80416', amount: 954.0, settled: null },
+  { id: 'TXN-80417', amount: 412.9, settled: 412.9 },
+]
+const money = (v) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+function reconStatus(r) {
+  if (r.settled == null) return { ok: false, text: 'Missing' }
+  if (r.settled !== r.amount) return { ok: false, text: `Δ ${money(r.amount - r.settled)}` }
+  return { ok: true, text: 'Matched' }
 }
 
-/* ------------------------------------------------------------------ */
-/* Reconciliation — settlements matched to transactions, mismatches flagged */
-/* ------------------------------------------------------------------ */
-function LedgerSim() {
-  const ref = useCanvas((ctx, { w, h, dt, state, pointer }) => {
-    const rowH = 30, gap = 14
-    if (!state.rows) {
-      state.rows = []
-      state.spawn = 0
-      for (let i = 0; i < 9; i++) state.rows.push(makeRow(h - i * (rowH + gap) - 40, i % 5 === 3))
+function LedgerDashboard() {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.4 })
+  const [step, setStep] = useState(0)
+  const [run, setRun] = useState(0)
+
+  useEffect(() => {
+    if (!inView) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setStep(RECON_ROWS.length)
+      return
     }
-    function makeRow(y, bad) {
-      const a = 0.35 + Math.random() * 0.55
-      return { y, a, b: bad ? Math.max(0.2, a - 0.12 - Math.random() * 0.2) : a, bad }
-    }
-    pointer.clicks.forEach(() => state.rows.push(makeRow(h + 10, true))) // inject a mismatch
-    state.spawn -= dt
-    if (state.spawn <= 0) {
-      state.rows.push(makeRow(h + 10, Math.random() < 0.18))
-      state.spawn = (rowH + gap) / 26
-    }
-    const colW = Math.min(220, w * 0.3)
-    const lx = w * 0.08, rx = w - w * 0.08 - colW
-    ctx.font = MONO
-    ctx.fillStyle = `rgba(${FG},0.55)`
-    ctx.fillText('SETTLEMENTS', lx, 26)
-    const tr = 'TRANSACTIONS'
-    ctx.fillText(tr, rx + colW - ctx.measureText(tr).width, 26)
-    for (const r of state.rows) {
-      r.y -= dt * 26
-      if (r.y < 40) continue
-      const fade = Math.min(1, (r.y - 40) / 60) * Math.min(1, (h - r.y + 20) / 40)
-      ctx.globalAlpha = Math.max(0, fade)
-      for (const [x, v] of [[lx, r.a], [rx, r.b]]) {
-        ctx.fillStyle = 'rgba(25,28,34,0.95)'
-        ctx.strokeStyle = `rgba(${FG},0.12)`
-        ctx.beginPath(); ctx.roundRect(x, r.y, colW, rowH, 7); ctx.fill(); ctx.stroke()
-        ctx.fillStyle = r.bad && x === rx ? ALERT : `rgba(${FG},0.35)`
-        ctx.fillRect(x + 10, r.y + 13, (colW - 20) * v, 4)
-      }
-      const y = r.y + rowH / 2
-      ctx.strokeStyle = r.bad ? ALERT : ACCENT
-      ctx.setLineDash(r.bad ? [4, 5] : [])
-      ctx.lineWidth = 1.25
-      ctx.beginPath(); ctx.moveTo(lx + colW, y); ctx.bezierCurveTo(w / 2, y, w / 2, y, rx, y); ctx.stroke()
-      ctx.setLineDash([])
-      ctx.fillStyle = r.bad ? ALERT : ACCENT
-      const tag = r.bad ? 'FLAGGED' : 'MATCHED'
-      const tw = ctx.measureText(tag).width + 14
-      ctx.beginPath(); ctx.roundRect(w / 2 - tw / 2, y - 9, tw, 18, 9); ctx.fill()
-      ctx.fillStyle = '#05080a'
-      ctx.fillText(tag, w / 2 - tw / 2 + 7, y + 4)
-      ctx.globalAlpha = 1
-    }
-    state.rows = state.rows.filter((r) => r.y > -40)
-  })
+    let i = 0
+    setStep(0)
+    const id = setInterval(() => {
+      i += 1
+      setStep(i)
+      if (i >= RECON_ROWS.length) clearInterval(id)
+    }, 520)
+    return () => clearInterval(id)
+  }, [inView, run])
+
+  const done = RECON_ROWS.slice(0, step)
+  const matched = done.filter((r) => reconStatus(r).ok).length
+  const flagged = done.length - matched
+  const rate = done.length ? Math.round((matched / done.length) * 100) : 0
+  const running = inView && step < RECON_ROWS.length
+  const kpis = [
+    { label: 'Matched', value: matched, tone: 'text-accent' },
+    { label: 'Flagged', value: flagged, tone: 'text-[#ff7a6b]' },
+    { label: 'Match rate', value: `${rate}%`, tone: 'text-fg', bar: rate },
+  ]
+
   return (
-    <Stage label="Simulation of the reconciliation engine matching settlements to transactions and flagging mismatches">
-      <canvas ref={ref} className="absolute inset-0 h-full w-full cursor-pointer" />
-    </Stage>
+    <div ref={ref} className="panel reg relative overflow-hidden !rounded-[22px] p-4 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="flex items-center gap-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-fg-dim">
+            <span className={`h-1.5 w-1.5 rounded-full ${running ? 'anim-pulse bg-accent' : 'bg-accent'}`} aria-hidden="true" />
+            Recon run · {running ? 'in progress' : 'complete'}
+          </p>
+          <p className="mt-1 truncate font-mono text-[0.72rem] text-fg-muted">transactions.csv ⇄ settlements.csv</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRun((n) => n + 1)}
+          disabled={running}
+          className="inline-flex min-h-[34px] flex-shrink-0 items-center gap-1.5 rounded-full bg-fg/[0.05] px-3 font-mono text-[0.64rem] uppercase tracking-[0.12em] text-fg-muted shadow-[inset_0_0_0_1px_rgb(var(--fg)/0.12)] transition-colors hover:text-fg disabled:opacity-40"
+        >
+          <TbRefresh aria-hidden="true" size={13} className={running ? 'animate-spin' : ''} />
+          Re-run
+        </button>
+      </div>
+
+      <dl className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+        {kpis.map((k) => (
+          <div key={k.label} className="relative flex flex-col-reverse rounded-xl bg-fg/[0.03] p-3 shadow-[inset_0_0_0_1px_rgb(var(--fg)/0.06)]">
+            {k.bar !== undefined && (
+              <div className="absolute inset-x-3 bottom-1.5 h-[3px] overflow-hidden rounded-full bg-fg/[0.08]" aria-hidden="true">
+                <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${k.bar}%` }} />
+              </div>
+            )}
+            <dt className="mt-1 font-mono text-[0.56rem] uppercase tracking-[0.12em] text-fg-dim sm:text-[0.6rem]">{k.label}</dt>
+            <dd className={`font-display text-xl font-semibold tabular-nums sm:text-2xl ${k.tone}`}>{k.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <table className="mt-4 w-full border-collapse text-left font-mono text-[0.66rem] sm:text-[0.74rem]">
+        <caption className="sr-only">Sample reconciliation run: each transaction compared with its settlement</caption>
+        <thead>
+          <tr className="text-[0.56rem] uppercase tracking-[0.12em] text-fg-dim sm:text-[0.6rem]">
+            <th scope="col" className="py-1.5 font-normal">Txn</th>
+            <th scope="col" className="py-1.5 text-right font-normal">Amount</th>
+            <th scope="col" className="py-1.5 text-right font-normal">Settled</th>
+            <th scope="col" className="py-1.5 pl-2 text-right font-normal">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {RECON_ROWS.map((r, i) => {
+            const st = reconStatus(r)
+            const checked = i < step
+            const checking = i === step && running && inView
+            return (
+              <tr key={r.id} className={`border-t border-fg/[0.07] transition-colors duration-300 ${checking ? 'bg-accent/[0.05]' : ''}`}>
+                <td className="py-2 text-fg-muted">{r.id}</td>
+                <td className="py-2 text-right tabular-nums text-fg">{money(r.amount)}</td>
+                <td className="py-2 text-right tabular-nums text-fg-muted">{r.settled == null ? '—' : money(r.settled)}</td>
+                <td className="py-2 pl-2 text-right">
+                  {checked ? (
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-[0.58rem] uppercase tracking-[0.08em] sm:text-[0.62rem] ${st.ok ? 'bg-accent/[0.12] text-accent' : 'bg-[#ff7a6b]/[0.12] text-[#ff7a6b]'}`}>
+                      {st.text}
+                    </span>
+                  ) : (
+                    <span className={`text-[0.6rem] uppercase tracking-[0.08em] ${checking ? 'anim-pulse text-accent' : 'text-fg-dim'}`}>
+                      {checking ? 'Checking' : 'Queued'}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
@@ -389,8 +415,8 @@ function ScreensVisual() {
 }
 
 export function ProjectVisual({ kind }) {
-  if (kind === 'vision') return <VisionSim />
-  if (kind === 'ledger') return <LedgerSim />
+  if (kind === 'vision') return <VisionDashboard />
+  if (kind === 'ledger') return <LedgerDashboard />
   if (kind === 'robot') return <RobotVideo />
   return <ScreensVisual />
 }
