@@ -1,256 +1,177 @@
-import { motion, useInView, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
-import TiltCard from './TiltCard'
-import SpotlightCard from './SpotlightCard'
+import { useEffect, useRef, useState } from 'react'
+import { animate, useInView, useReducedMotion } from 'framer-motion'
+import SectionHeader from './ui/SectionHeader'
+import Reveal from './ui/Reveal'
+import { awards, competitionStats, keyWins } from '../data/profile'
 
-const awards = [
-  {
-    emoji: '🏆',
-    label: 'State Recognition',
-    title: 'ISTE Chapter Best Student Award',
-    subtitle: '',
-    year: '2026',
-    org: 'ISTE Tamilnadu Section',
-    description:
-      'Recognized for sustained excellence across academics, leadership, innovation, and professional achievement throughout the undergraduate program.',
-    gradient: 'from-amber-500/30 via-yellow-400/20 to-amber-600/30',
-    border: 'border-amber-400/30',
-    accent: 'text-amber-400',
-    iconBg: 'from-amber-400/20 to-yellow-500/10',
-    iconBorder: 'border-amber-400/30',
-    glowColor: 'rgba(251, 191, 36, 0.15)',
-    ribbonGradient: 'from-amber-500 via-yellow-400 to-amber-500',
-    featured: true,
-  },
-  {
-    emoji: '🌟',
-    label: 'Institutional Recognition',
-    title: 'Best Outgoing Student',
-    subtitle: '',
-    year: '2026',
-    org: 'CSE Department · Nandha Engineering College',
-    description:
-      'Honored as the Best Outgoing Student of the CSE Department for exceptional performance across academics, research, leadership, and professional development throughout the undergraduate program.',
-    gradient: 'from-emerald-500/25 via-green-400/20 to-emerald-500/25',
-    border: 'border-emerald-400/25',
-    accent: 'text-emerald-400',
-    iconBg: 'from-emerald-400/20 to-green-500/10',
-    iconBorder: 'border-emerald-400/25',
-    glowColor: 'rgba(16, 185, 129, 0.12)',
-    ribbonGradient: 'from-emerald-500 via-green-400 to-emerald-500',
-    featured: false,
-  },
-  {
-    emoji: '🎖️',
-    label: 'Department Recognition',
-    title: 'Best Co-Curricular Student (CSE)',
-    subtitle: '',
-    year: '2025',
-    org: 'Nandha Engineering College',
-    description:
-      'Awarded for outstanding contributions in co-curricular activities, leadership roles, and consistent participation across departmental and inter-college events.',
-    gradient: 'from-cyan-500/25 via-blue-400/20 to-cyan-500/25',
-    border: 'border-cyan-400/25',
-    accent: 'text-cyan-400',
-    iconBg: 'from-cyan-400/20 to-blue-500/10',
-    iconBorder: 'border-cyan-400/25',
-    glowColor: 'rgba(6, 182, 212, 0.12)',
-    ribbonGradient: 'from-cyan-500 via-blue-400 to-cyan-500',
-    featured: false,
-  },
-  {
-    emoji: '🏅',
-    label: 'Department Recognition — 2nd Consecutive Year',
-    title: 'Best Co-Curricular Student (CSE)',
-    subtitle: '',
-    year: '2026',
-    org: 'Nandha Engineering College',
-    description:
-      'Awarded for the second consecutive year for outstanding contributions in co-curricular activities, leadership roles, and consistent participation across departmental and inter-college events.',
-    gradient: 'from-rose-500/25 via-pink-400/20 to-rose-500/25',
-    border: 'border-rose-400/25',
-    accent: 'text-rose-400',
-    iconBg: 'from-rose-400/20 to-pink-500/10',
-    iconBorder: 'border-rose-400/25',
-    glowColor: 'rgba(244, 63, 94, 0.12)',
-    ribbonGradient: 'from-rose-500 via-pink-400 to-rose-500',
-    featured: false,
-  },
-  {
-    emoji: '🎓',
-    label: 'National Level',
-    title: 'Internship Program',
-    subtitle: '',
-    year: '2025',
-    org: 'NIT Trichy',
-    description:
-      'A 30-day national-level internship program at one of India\'s premier technical institutions, gaining hands-on exposure to advanced engineering practices.',
-    gradient: 'from-violet-500/25 via-purple-400/20 to-violet-500/25',
-    border: 'border-violet-400/25',
-    accent: 'text-violet-400',
-    iconBg: 'from-violet-400/20 to-purple-500/10',
-    iconBorder: 'border-violet-400/25',
-    glowColor: 'rgba(139, 92, 246, 0.12)',
-    ribbonGradient: 'from-violet-500 via-purple-400 to-violet-500',
-    featured: false,
-  },
+const mono = { fontFamily: '"JetBrains Mono", ui-monospace, monospace' }
+
+// Hexagonal seal for the headline honour — drawn in the site's ice/cyan line language.
+function Seal() {
+  const hex = (r) =>
+    Array.from({ length: 6 }, (_, i) => {
+      const a = (Math.PI / 3) * i - Math.PI / 2
+      return `${100 + Math.cos(a) * r},${100 + Math.sin(a) * r}`
+    }).join(' ')
+  return (
+    <svg viewBox="0 0 200 200" className="h-full w-full" aria-hidden="true">
+      <defs>
+        <path id="seal-ring" d="M100 100 m-84 0 a84 84 0 1 1 168 0 a84 84 0 1 1 -168 0" />
+      </defs>
+      <g className="anim-spin-slow" style={{ transformBox: 'fill-box', transformOrigin: 'center' }}>
+        <text fontSize="8" letterSpacing="3.2" className="fill-signal/80" style={mono}>
+          <textPath href="#seal-ring">ISTE · CHAPTER BEST STUDENT · TAMILNADU SECTION · 2026 ·</textPath>
+        </text>
+      </g>
+      <polygon points={hex(66)} fill="none" className="stroke-fg/30" strokeWidth="1" />
+      <polygon points={hex(56)} className="fill-accent/[0.06] stroke-accent/70" strokeWidth="1.25" />
+      {Array.from({ length: 6 }, (_, i) => {
+        const a = (Math.PI / 3) * i - Math.PI / 2
+        return <circle key={i} cx={100 + Math.cos(a) * 56} cy={100 + Math.sin(a) * 56} r="2.6" className="fill-accent" />
+      })}
+      <text x="100" y="94" textAnchor="middle" fontSize="11" letterSpacing="4" className="fill-signal" style={mono}>ISTE</text>
+      <text x="100" y="122" textAnchor="middle" fontSize="28" fontWeight="700" className="fill-fg" style={{ fontFamily: '"Chakra Petch", sans-serif', letterSpacing: '-0.5px' }}>2026</text>
+    </svg>
+  )
+}
+
+function Counter({ target, suffix = '' }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true })
+  const reduce = useReducedMotion()
+  const [value, setValue] = useState(reduce ? target : 0)
+  useEffect(() => {
+    if (!inView || reduce) return
+    const controls = animate(0, target, { duration: 1.4, ease: [0.16, 1, 0.3, 1], onUpdate: (v) => setValue(Math.round(v)) })
+    return controls.stop
+  }, [inView, reduce, target])
+  return (
+    <span ref={ref}>
+      <span aria-hidden="true">{value}{suffix}</span>
+      <span className="sr-only">{target}{suffix}</span>
+    </span>
+  )
+}
+
+const FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: '1st', label: '1st place' },
+  { id: '2nd', label: '2nd place' },
 ]
 
 export default function IsteAward() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  })
-  const timelineHeight = useTransform(scrollYProgress, [0, 0.8], ['0%', '100%'])
+  const [featured, ...rest] = awards
+  const years = [...new Set(rest.map((a) => a.year))].sort().reverse()
+  const [filter, setFilter] = useState('all')
+  const wins = keyWins.filter((w) => filter === 'all' || w.prize === filter)
 
   return (
-    <section id="awards" className="section-padding pt-8 pb-8" ref={ref}>
-      <div className="max-w-5xl mx-auto">
-        {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={isInView ? { scale: 1, rotate: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="inline-block mb-4"
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-yellow-500/10 border border-amber-400/20 flex items-center justify-center">
-              <span className="text-3xl">🏅</span>
-            </div>
-          </motion.div>
-          <p className="text-amber-400 font-mono text-sm mb-2 tracking-widest uppercase">Awards & Recognitions</p>
-          <h2 className="section-title">
-            Honors That <span className="gradient-text">Define Excellence</span>
-          </h2>
-        </motion.div>
+    <section id="awards" tabIndex={-1} aria-labelledby="awards-title" className="section">
+      <div className="shell">
+        <SectionHeader index="07" label="Awards & recognitions" id="awards-title" title="Recognition" lede="ISTE Tamilnadu Section and Nandha Engineering College." />
 
-        {/* Timeline with awards */}
-        <div className="relative">
-          {/* Animated timeline line — desktop only */}
-          <div className="hidden md:block absolute left-8 top-0 bottom-0 w-[2px]">
-            <div className="absolute inset-0 bg-white/5 rounded-full" />
-            <motion.div
-              className="absolute top-0 left-0 w-full bg-gradient-to-b from-amber-400/60 via-cyan-400/60 to-violet-400/60 rounded-full"
-              style={{ height: timelineHeight }}
-            />
-          </div>
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+          {/* Headline honour */}
+          <Reveal className="lg:col-span-5">
+            <article className="relative">
+              <div className="mx-auto w-48 sm:w-56 lg:mx-0">
+                <Seal />
+              </div>
+              <p className="mt-6 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-accent">{featured.label} · highest honour</p>
+              <h3 className="mt-3 text-[1.9rem] font-semibold tracking-[-0.03em] text-fg sm:text-[2.3rem]">{featured.title}</h3>
+              <p className="mt-2 text-signal">{featured.org}</p>
+              <p className="mt-4 leading-relaxed text-fg-muted">{featured.description}</p>
+            </article>
+          </Reveal>
 
-          <div className="space-y-6 md:space-y-8">
-            {awards.map((award, idx) => (
-              <motion.div
-                key={award.title}
-                initial={{ opacity: 0, x: -30, scale: 0.95 }}
-                animate={isInView ? { opacity: 1, x: 0, scale: 1 } : {}}
-                transition={{ duration: 0.7, delay: 0.2 + 0.2 * idx, ease: [0.16, 1, 0.3, 1] }}
-                className="relative md:pl-20"
-              >
-                {/* Timeline dot — desktop only */}
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={isInView ? { scale: 1 } : {}}
-                  transition={{ duration: 0.5, delay: 0.3 + 0.2 * idx, type: 'spring' }}
-                  className="hidden md:flex absolute left-[18px] top-8 w-6 h-6 rounded-full items-center justify-center z-10"
-                >
-                  <div className={`w-6 h-6 rounded-full bg-gradient-to-r ${award.ribbonGradient} flex items-center justify-center`}>
-                    <div className="w-2.5 h-2.5 rounded-full bg-dark-900" />
-                  </div>
-                  <div
-                    className="absolute inset-0 rounded-full animate-ping-slow"
-                    style={{ background: award.glowColor }}
-                  />
-                </motion.div>
-
-                <TiltCard intensity={4}>
-                  <div className="relative rounded-2xl overflow-hidden group">
-                    {/* Gradient border glow */}
-                    <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${award.gradient} blur-sm animate-pulse-slow`} />
-
-                    {/* Featured badge for top award */}
-                    {award.featured && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.5, delay: 0.6 }}
-                        className="absolute top-4 right-4 z-20"
-                      >
-                        <div className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/30 backdrop-blur-sm">
-                          <span className="text-amber-300 text-xs font-semibold tracking-wider uppercase">Highest Honor</span>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    <SpotlightCard className={`relative glass rounded-2xl ${award.border} ${award.featured ? 'p-6 md:p-10' : 'p-6 md:p-10'}`}>
-                      <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
-                        {/* Icon */}
-                        <motion.div
-                          initial={{ opacity: 0, rotate: -10 }}
-                          animate={isInView ? { opacity: 1, rotate: 0 } : {}}
-                          transition={{ duration: 0.6, delay: 0.2 + 0.15 * idx }}
-                          className="flex-shrink-0"
-                        >
-                          <motion.div
-                            animate={{ y: [0, -8, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.5 }}
-                            className={`${award.featured ? 'w-20 h-20 md:w-24 md:h-24' : 'w-20 h-20 md:w-24 md:h-24'} rounded-2xl bg-gradient-to-br ${award.iconBg} flex items-center justify-center border ${award.iconBorder} relative`}
-                          >
-                            <span className={`${award.featured ? 'text-4xl md:text-5xl' : 'text-4xl md:text-5xl'}`}>{award.emoji}</span>
-                            {/* Glow ring behind icon */}
-                            <div
-                              className="absolute inset-0 rounded-2xl blur-xl opacity-40 group-hover:opacity-70 transition-opacity duration-500"
-                              style={{ background: award.glowColor }}
-                            />
-                          </motion.div>
-                        </motion.div>
-
-                        {/* Content */}
-                        <div className="flex-1">
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.5, delay: 0.3 + 0.15 * idx }}
-                          >
-                            <p className={`${award.accent} font-mono text-xs uppercase tracking-widest mb-2`}>
-                              {award.label}
-                            </p>
-                            <h2 className={`${award.featured ? 'text-2xl md:text-3xl lg:text-4xl' : 'text-2xl md:text-3xl lg:text-4xl'} font-bold text-white mb-1`}>
-                              {award.title}
-                            </h2>
-                            <p className={`${award.accent} opacity-80 font-medium text-lg`}>
-                              {award.year} &middot; {award.org}
-                            </p>
-                          </motion.div>
-
-                          <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.5, delay: 0.4 + 0.15 * idx }}
-                            className="text-slate-400 mt-4 leading-relaxed max-w-2xl"
-                          >
-                            {award.description}
-                          </motion.p>
-
-                          {/* Award shine bar */}
-                          <motion.div
-                            initial={{ scaleX: 0 }}
-                            animate={isInView ? { scaleX: 1 } : {}}
-                            transition={{ duration: 0.8, delay: 0.6 + 0.15 * idx, ease: [0.16, 1, 0.3, 1] }}
-                            className={`mt-5 h-[2px] bg-gradient-to-r ${award.ribbonGradient} rounded-full origin-left opacity-40`}
-                          />
-                        </div>
-                      </div>
-                    </SpotlightCard>
-                  </div>
-                </TiltCard>
-              </motion.div>
+          {/* Timeline of other honours */}
+          <div className="lg:col-span-7">
+            {years.map((year) => (
+              <Reveal key={year} className="grid grid-cols-[4.5rem_1fr] gap-4 sm:grid-cols-[6rem_1fr]">
+                <p className="pt-5 font-display text-2xl font-semibold tracking-[-0.03em] text-fg-dim">{year}</p>
+                <ol className="border-l border-fg/[0.1]">
+                  {rest.filter((a) => a.year === year).map((a) => (
+                    <li key={a.id} className="group relative py-5 pl-6">
+                      <span aria-hidden="true" className="absolute -left-[5px] top-7 h-[9px] w-[9px] rotate-45 bg-canvas shadow-[inset_0_0_0_1.5px_rgb(var(--accent))] transition-colors duration-300 group-hover:bg-accent" />
+                      <p className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-fg-dim">{a.label}</p>
+                      <h3 className="mt-1.5 text-xl font-semibold tracking-[-0.02em] text-fg">{a.title}</h3>
+                      <p className="mt-0.5 text-sm text-signal">{a.org}</p>
+                      <p className="mt-2 max-w-[38rem] text-[0.95rem] leading-relaxed text-fg-muted">{a.description}</p>
+                    </li>
+                  ))}
+                </ol>
+              </Reveal>
             ))}
           </div>
+        </div>
+
+        {/* Competition record */}
+        <div className="mt-14 border-t border-fg/[0.08] pt-10">
+          <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h3 className="text-2xl font-semibold tracking-[-0.03em] text-fg sm:text-3xl">Competition record</h3>
+              <p className="mt-1 text-fg-muted">Papers, design, code and quizzes.</p>
+            </div>
+            <dl className="grid grid-cols-4 items-end gap-6 sm:gap-10">
+              {competitionStats.map((s) => (
+                <div key={s.label} className="flex flex-col-reverse">
+                  <dt className="mt-1 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-fg-dim sm:text-[0.62rem]">{s.label}</dt>
+                  <dd className="font-display text-3xl font-semibold tracking-[-0.04em] text-fg sm:text-4xl">
+                    <Counter target={s.value} suffix={s.suffix} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+
+          <Reveal delay={0.05} className="mt-8">
+            <div className="flex items-center justify-between gap-4">
+              <h4 className="eyebrow">Key wins</h4>
+              <div className="flex gap-1.5" role="group" aria-label="Filter key wins">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFilter(f.id)}
+                    aria-pressed={filter === f.id}
+                    className={`min-h-[34px] rounded-full px-3 font-mono text-[0.66rem] uppercase tracking-[0.12em] transition-colors duration-300 ${
+                      filter === f.id ? 'bg-fg text-canvas' : 'bg-fg/[0.05] text-fg-muted hover:text-fg'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <table className="mt-4 w-full border-collapse text-left">
+              <caption className="sr-only">Key competition wins</caption>
+              <thead className="hidden sm:table-header-group">
+                <tr className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-fg-dim">
+                  <th scope="col" className="w-20 py-2 font-normal">Place</th>
+                  <th scope="col" className="py-2 font-normal">Event</th>
+                  <th scope="col" className="py-2 font-normal">Venue</th>
+                  <th scope="col" className="w-16 py-2 text-right font-normal">Year</th>
+                </tr>
+              </thead>
+              <tbody>
+                {wins.map((w) => (
+                  <tr key={`${w.event}-${w.venue}`} className="group border-t border-fg/[0.07] transition-colors duration-300 hover:bg-fg/[0.02]">
+                    <td className="py-3.5 pr-3 align-top">
+                      <span className={`inline-flex w-11 justify-center rounded-full py-0.5 font-mono text-[0.7rem] font-medium ${w.prize === '1st' ? 'bg-accent/[0.14] text-accent' : 'bg-fg/[0.07] text-fg-muted'}`}>
+                        {w.prize}
+                      </span>
+                    </td>
+                    <td className="py-3.5 pr-3 align-top">
+                      <span className="text-[0.95rem] text-fg">{w.event}</span>
+                      <span className="mt-0.5 block text-sm text-fg-dim sm:hidden">{w.venue}{w.year ? ` · ${w.year}` : ''}</span>
+                    </td>
+                    <td className="hidden py-3.5 pr-3 align-top text-sm text-fg-muted sm:table-cell">{w.venue}</td>
+                    <td className="hidden py-3.5 text-right align-top font-mono text-sm text-fg-dim sm:table-cell">{w.year || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Reveal>
         </div>
       </div>
     </section>

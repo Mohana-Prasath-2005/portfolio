@@ -6,83 +6,59 @@ Personal portfolio website showcasing projects, achievements, research, and lead
 
 ## Tech Stack
 
-- **React 18** — Component-based UI
-- **Vite 6** — Build tooling and dev server
-- **Tailwind CSS 3** — Utility-first styling
-- **Framer Motion 11** — Scroll-triggered and entrance animations
-- **Lenis** — Butter-smooth scroll engine (desktop only)
-- **React Icons** — Icon library
+- **React 18** + **Vite 6**
+- **Tailwind CSS 3** — single dark design system driven by tokens in `src/index.css`
+- **Three.js + React Three Fiber** — persistent 3D environment (lazy-loaded)
+- **Framer Motion 11** — reveals, tabs and scroll-linked effects
+- **Lenis** — smooth scrolling (desktop, fine pointers only)
+- **React Icons** — Simple Icons / Tabler marks for the tech stack
+
+## Design
+
+One dark theme only: obsidian background, charcoal surfaces with a top-lit edge, off-white type, an electric-cyan accent used sparingly and ice-blue highlights. Inter Tight for display and UI, JetBrains Mono for technical labels.
 
 ## Features
 
-- Animated preloader with progress counter
-- Lenis smooth scrolling with inertia (desktop)
-- Interactive particle background with aurora waves and mouse tracking
-- Custom glowing cursor with hover-aware ring (desktop)
-- Cursor sparkle trail with cyan/violet particles (desktop)
-- Floating geometric shapes with scroll-based parallax (desktop)
-- 3D tilt cards and mouse-following spotlight effect on all cards
-- Magnetic hover buttons and UIverse-style animated border CTAs
-- Typing animation cycling through roles
-- Character-by-character staggered name reveal
-- Infinite marquee ticker for skills (CSS-based, GPU-accelerated)
-- Animated rotating gradient borders on stat cards
-- Counter glow pulse effect on competition stats
-- Highlighted keywords in hero description
-- Animated CGPA counter and semester bar chart
-- Scroll progress bar and active section indicator in navbar
-- Fully responsive — mobile, tablet, and desktop
-- Mobile-optimized: reduced particles, disabled heavy effects, native scroll
-- Noise texture overlay and morphing background blobs (desktop)
+- **3D environment** behind the whole page: a procedural terrain drawn as topographic contour lines, a pointer-following light pool, and the camera gliding along the valley as you scroll
+- **System stack** in the hero: the README's six technology layers as lit slabs with one module per tool (26), joined by data buses carrying packets; hover/tap a layer, or use the HTML layer picker, to inspect it
+- **Case-file project showcase** with accessible tabs and an interactive architecture flow per project (built only from facts in the project/repo descriptions)
+- **Tech arsenal** as circuit rails, one per layer, sourced from the GitHub profile README
+- Loads text first; the WebGL chunk mounts on idle and falls back to a static backdrop without WebGL
+- Reduced motion: no smooth scroll or cursor follower, static 3D render, no animated packets
+- Accessible mobile menu, skip link, visible focus states, copy-to-clipboard email
 
 ## Sections
 
-1. **Hero** — Name, roles, bio, CTAs, social links
-2. **Awards** — ISTE Best Student, Best Co-Curricular Student, NIT Trichy Internship
-3. **Career Milestones** — Open Fabric (Singapore), Cognizant placements
-4. **Featured Projects** — Vision X, Transaction Reconciliation, IoT Robot Car
-5. **Innovation & Research** — Projects, research papers, hackathons
-6. **Competition Dominance** — Stats counters and key wins
-7. **Leadership & Governance** — 4-year progression of roles
-8. **Academic Excellence** — CGPA trend, HSC/SSLC scores
-9. **Certifications** — NPTEL, Microsoft, Infosys, HackerRank credentials
-10. **Tech Arsenal** — Skills across 4 categories with infinite marquee
-11. **Contact** — Email and phone
+1. **Hero** — portrait, name, role, highlights, stack inspector
+2. **About** — statement and spec sheet
+3. **Stack** — 26 tools across 6 layers
+4. **Work** — VISION X, Transaction Reconciliation, IoT Robot Car
+5. **Research** — papers, hackathons, other builds
+6. **Journey** — Open Fabric, NIT Trichy, education (CGPA 9.2, semester chart), certifications
+7. **Leadership** — roles timeline
+8. **Awards** — honours and competition record
+9. **Contact** — email, phone, profiles
 
 ## Project Structure
 
 ```
 src/
-├── App.jsx                    # Root layout with preloader, cursor, sections
-├── main.jsx                   # React entry point
-├── index.css                  # Tailwind config, custom animations, button styles
-├── hooks/
-│   └── useIsMobile.js         # Shared mobile/touch detection hook
-└── components/
-    ├── Navbar.jsx             # Fixed nav with active section indicator
-    ├── Hero.jsx               # Landing section with particles and typing effect
-    ├── IsteAward.jsx          # Awards showcase (3 highlight banners)
-    ├── CareerMilestones.jsx   # Placement cards
-    ├── Projects.jsx           # Featured project case studies
-    ├── Innovation.jsx         # Projects grid, research, hackathons
-    ├── CompetitionWins.jsx    # Stats counters and wins list
-    ├── Leadership.jsx         # Leadership roles timeline
-    ├── AcademicExcellence.jsx # CGPA chart and scores
-    ├── Certifications.jsx     # Certification cards
-    ├── Skills.jsx             # Tech stack grid with infinite marquee
-    ├── Contact.jsx            # Contact cards and Say Hello CTA
-    ├── ParticleBackground.jsx # Canvas-based interactive particles
-    ├── CustomCursor.jsx       # Glowing cursor with hover ring (desktop)
-    ├── CursorTrail.jsx        # Sparkle particle trail (desktop)
-    ├── Preloader.jsx          # Animated loading screen
-    ├── ScrollProgress.jsx     # Top scroll progress bar
-    ├── SmoothScroll.jsx       # Lenis smooth scroll (desktop)
-    ├── FloatingShapes.jsx     # Parallax geometric decorations (desktop)
-    ├── InfiniteMarquee.jsx    # CSS-based auto-scrolling ticker
-    ├── SpotlightCard.jsx      # Mouse-following radial spotlight
-    ├── TiltCard.jsx           # 3D perspective tilt on hover
-    └── MagneticButton.jsx     # Cursor-attracted button wrapper
+├── App.jsx                 # Layout: world stage, nav, sections, footer
+├── index.css               # Design tokens and shared component styles
+├── data/profile.js         # All portfolio content (single source of truth)
+├── assets/avatar.jpg       # Optimised portrait
+├── three/
+│   ├── WorldStage.jsx      # WebGL detection, idle lazy-load, fallback
+│   ├── World.jsx           # Terrain, motes, camera rig, stack placement
+│   ├── Stack.jsx           # The 6-layer system stack (materials, buses, packets)
+│   └── store.js            # Shared layer-selection state (HTML ↔ WebGL)
+├── hooks/                  # useMediaQuery, useActiveSection
+└── components/             # Hero, About, Skills, Projects (+ SystemFlow), Innovation,
+                            # Journey (+ AcademicExcellence, Certifications), Leadership,
+                            # IsteAward, CompetitionWins, Contact, Footer, Navbar, Avatar, ui/*
 ```
+
+To change content, edit `src/data/profile.js`.
 
 ## Getting Started
 

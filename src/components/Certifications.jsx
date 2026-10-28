@@ -1,66 +1,81 @@
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
-import { HiAcademicCap } from 'react-icons/hi'
-import SpotlightCard from './SpotlightCard'
+import { motion } from 'framer-motion'
+import Reveal from './ui/Reveal'
+import { certifications } from '../data/profile'
 
+const MARK = {
+  'IIT Madras (NPTEL)': 'NPTEL',
+  'Infosys Springboard': 'INF',
+  'Microsoft & LinkedIn': 'MS',
+  LinkedIn: 'IN',
+  HackerRank: 'HR',
+  'NIT Trichy': 'NIT',
+}
 
-const certifications = [
-  { name: 'Data Science Workshop', org: 'NIT Trichy', weight: 'heavy' },
-  { name: 'Career Essentials in Data Analysis', org: 'Microsoft & LinkedIn', weight: 'heavy' },
-  { name: 'AI Foundation (97.5%)', org: 'Infosys Springboard', weight: 'heavy' },
-  { name: 'Docker Foundations Professional', org: 'LinkedIn', weight: 'heavy' },
-  { name: 'SQL (Intermediate)', org: 'HackerRank', weight: 'heavy' },
-  { name: 'NPTEL — Problem Solving Through C', org: 'IIT Madras (NPTEL)', weight: 'heavy' },
-  { name: 'NPTEL — Cyber Security & Privacy', org: 'IIT Madras (NPTEL)', weight: 'normal' },
-  { name: 'Applied Generative AI (82.5%)', org: 'Infosys Springboard', weight: 'normal' },
-]
+// Group certifications by issuer, preserving first-seen order
+const groups = certifications.reduce((acc, c) => {
+  const g = acc.find((x) => x.org === c.org)
+  const m = c.name.match(/^(.*?)\s*\((\d+(?:\.\d+)?)%\)$/)
+  const item = m ? { name: m[1], score: parseFloat(m[2]) } : { name: c.name }
+  if (g) g.items.push(item)
+  else acc.push({ org: c.org, items: [item] })
+  return acc
+}, [])
+
+function Hex({ text }) {
+  return (
+    <svg viewBox="0 0 64 64" className="h-12 w-12 flex-shrink-0" aria-hidden="true">
+      <path d="M32 4 56.2 18v28L32 60 7.8 46V18Z" className="fill-accent/[0.06] stroke-accent/60" strokeWidth="1.5" strokeLinejoin="round" />
+      <text x="32" y="36" textAnchor="middle" fontSize={text.length > 3 ? 10 : 13} fontWeight="600" className="fill-fg" style={{ fontFamily: '"Chakra Petch", sans-serif' }}>
+        {text}
+      </text>
+    </svg>
+  )
+}
 
 export default function Certifications() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
-
   return (
-    <section className="section-padding" ref={ref}>
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <p className="text-primary font-mono text-sm mb-2">Certifications</p>
-          <h2 className="section-title">
-Selected Certifications
-          </h2>
-          <p className="section-subtitle">
-            Curated credentials — NPTEL, Microsoft, Infosys, HackerRank.
-          </p>
-        </motion.div>
+    <div className="mt-12">
+      <Reveal className="flex flex-wrap items-baseline justify-between gap-4">
+        <h3 className="text-2xl font-semibold text-fg sm:text-3xl">Credentials</h3>
+        <p className="text-[0.66rem] uppercase tracking-[0.16em] text-fg-dim">
+          {certifications.length} certifications · {groups.length} issuers
+        </p>
+      </Reveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
-          {certifications.map((cert, idx) => (
-            <motion.div
-              key={cert.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.4, delay: 0.05 * idx }}
-            >
-              <SpotlightCard className={`glass-hover rounded-xl p-4 h-full ${
-                cert.weight === 'heavy' ? 'border border-primary/10' : ''
-              }`}>
-                <div className="flex items-start gap-3">
-                  <HiAcademicCap className={`mt-0.5 flex-shrink-0 ${
-                    cert.weight === 'heavy' ? 'text-primary' : 'text-slate-500'
-                  }`} size={16} />
-                  <div>
-                    <p className="text-white text-sm font-medium">{cert.name}</p>
-                    <p className="text-slate-500 text-xs mt-1">{cert.org}</p>
+      <ul className="mt-6 grid gap-px overflow-hidden rounded-2xl bg-fg/[0.09] sm:grid-cols-2 lg:grid-cols-3">
+        {groups.map((g, gi) => (
+          <Reveal as="li" key={g.org} delay={(gi % 3) * 0.05} className="group bg-canvas p-5 transition-colors duration-500 hover:bg-surface sm:p-6">
+            <div className="flex items-center gap-4">
+              <Hex text={MARK[g.org] || g.org.slice(0, 3).toUpperCase()} />
+              <div>
+                <p className="font-display text-lg font-semibold leading-tight text-fg">{g.org}</p>
+                <p className="text-[0.62rem] uppercase tracking-[0.14em] text-fg-dim">{g.items.length} credential{g.items.length > 1 ? 's' : ''}</p>
+              </div>
+            </div>
+            <ul className="mt-5 space-y-3">
+              {g.items.map((it) => (
+                <li key={it.name}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[0.88rem] leading-snug text-fg-muted transition-colors duration-300 group-hover:text-fg">{it.name}</span>
+                    {it.score && <span className="flex-shrink-0 text-[0.8rem] font-semibold text-accent">{it.score}%</span>}
                   </div>
-                </div>
-              </SpotlightCard>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
+                  {it.score && (
+                    <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-fg/[0.08]" aria-hidden="true">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${it.score}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                        className="h-full rounded-full bg-accent"
+                      />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        ))}
+      </ul>
+    </div>
   )
 }
