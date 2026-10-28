@@ -1,145 +1,208 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { HiMenu, HiX } from 'react-icons/hi'
-import MagneticButton from './MagneticButton'
+import Logo from './Logo'
+import useActiveSection from '../hooks/useActiveSection'
+import { sections, socials } from '../data/profile'
 
-const navLinks = [
-  { name: 'Awards', href: '#awards' },
-  { name: 'Career', href: '#career' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Innovation', href: '#innovation' },
-  { name: 'Academics', href: '#academics' },
-  { name: 'Contact', href: '#contact' },
-]
+const primary = ['about', 'stack', 'work', 'research', 'journey', 'awards', 'contact']
+const primaryLinks = sections.filter((s) => primary.includes(s.id))
+const sectionIds = sections.map((s) => s.id)
+
+function MenuIcon({ open }) {
+  return (
+    <span className="relative block h-3 w-5" aria-hidden="true">
+      <span className={`absolute left-0 h-px w-5 bg-fg transition-transform duration-500 ${open ? 'top-1.5 rotate-45' : 'top-0'}`} />
+      <span className={`absolute left-0 h-px bg-fg transition-all duration-500 ${open ? 'top-1.5 w-5 -rotate-45' : 'top-3 w-3.5'}`} />
+    </span>
+  )
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState('')
+  const [open, setOpen] = useState(false)
+  const active = useActiveSection(sectionIds)
+  const toggleRef = useRef(null)
+  const menuRef = useRef(null)
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 50)
-
-      // Detect active section
-      const sections = navLinks.map((l) => l.href.slice(1))
-      let current = ''
-      for (const id of sections) {
-        const el = document.getElementById(id)
-        if (el) {
-          const rect = el.getBoundingClientRect()
-          if (rect.top <= 150) current = id
-        }
-      }
-      setActiveSection(current)
-    }
-
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-dark-900/70 backdrop-blur-2xl border-b border-white/5 shadow-lg shadow-black/10'
-          : 'bg-transparent'
-      }`}
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <MagneticButton as="a" href="#hero" strength={0.3} className="relative group">
-            <span className="text-xl font-bold text-white tracking-tight relative z-10">MP</span>
-            <div className="absolute -inset-2 rounded-lg bg-primary/0 group-hover:bg-primary/10 transition-colors duration-300" />
-          </MagneticButton>
+  // Mobile menu: lock scroll, close on Escape, keep focus inside, restore focus on close
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    menuRef.current?.querySelector('a')?.focus()
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Tab' && menuRef.current) {
+        const items = [toggleRef.current, ...menuRef.current.querySelectorAll('a, button')]
+        const idx = items.indexOf(document.activeElement)
+        if (e.shiftKey && idx <= 0) {
+          e.preventDefault()
+          items[items.length - 1].focus()
+        } else if (!e.shiftKey && idx === items.length - 1) {
+          e.preventDefault()
+          items[0].focus()
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    const toggle = toggleRef.current
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+      toggle?.focus({ preventScroll: true })
+    }
+  }, [open])
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => {
-              const isActive = activeSection === link.href.slice(1)
+  const activeIndex = sections.findIndex((s) => s.id === active)
+
+  return (
+    <>
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow] duration-500 ${
+          scrolled || open ? 'bg-canvas/75 shadow-[0_1px_0_rgb(var(--fg)/0.07)] backdrop-blur-xl' : ''
+        }`}
+      >
+        <nav aria-label="Primary" className="shell flex h-[4.5rem] items-center justify-between gap-6">
+          <a href="#top" className="group flex items-center gap-3" aria-label="Mohana Prasath G — back to top">
+            <Logo size={38} />
+            <span className="hidden flex-col leading-tight sm:flex">
+              <span className="font-display text-[0.95rem] font-semibold tracking-[-0.01em] text-fg">Mohana Prasath G</span>
+            </span>
+          </a>
+
+          <ul className="hidden items-center gap-0.5 rounded-full bg-fg/[0.05] p-1 lg:flex">
+            {primaryLinks.map((link) => {
+              const isActive = active === link.id
               return (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="relative px-4 py-2 text-sm transition-colors duration-200"
-                >
-                  <span className={`relative z-10 ${isActive ? 'text-white' : 'text-slate-400 hover:text-white'}`}>
-                    {link.name}
-                  </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute inset-0 rounded-lg bg-white/5"
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNavLine"
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-primary rounded-full"
-                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                </a>
+                <li key={link.id}>
+                  <a
+                    href={`#${link.id}`}
+                    aria-current={isActive ? 'true' : undefined}
+                    className={`relative block rounded-full px-3.5 py-2 text-[0.8rem] transition-colors duration-300 xl:px-4 ${
+                      isActive ? 'text-canvas' : 'text-fg-muted hover:text-fg'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-pill"
+                        className="absolute inset-0 rounded-full bg-fg"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative">{link.label}</span>
+                  </a>
+                </li>
               )
             })}
-            <MagneticButton
-              as="a"
-              href="https://github.com/Mohana-Prasath-2005"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-4 text-sm px-4 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all duration-200"
-              strength={0.3}
+          </ul>
+
+          <div className="flex items-center gap-2">
+            <button
+              ref={toggleRef}
+              type="button"
+              className="icon-btn lg:hidden"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              onClick={() => setOpen((o) => !o)}
             >
-              GitHub
-            </MagneticButton>
+              <MenuIcon open={open} />
+            </button>
           </div>
+        </nav>
+      </header>
 
-          {/* Mobile toggle */}
-          <button
-            className="md:hidden text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <HiX size={24} /> : <HiMenu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
       <AnimatePresence>
-        {mobileOpen && (
+        {open && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-dark-900/95 backdrop-blur-2xl border-b border-white/5"
+            id="mobile-menu"
+            ref={menuRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site navigation"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-40 overflow-y-auto bg-canvas/95 pt-[4.5rem] backdrop-blur-xl lg:hidden"
           >
-            <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link, i) => (
-                <motion.a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * i }}
-                  className={`block px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === link.href.slice(1)
-                      ? 'text-white bg-white/5'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {link.name}
-                </motion.a>
-              ))}
-            </div>
+            <nav aria-label="Sections" className="shell flex min-h-full flex-col justify-between pb-10 pt-6">
+              <ol>
+                {sections.map((s, i) => (
+                  <motion.li
+                    key={s.id}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.03 * i, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <a
+                      href={`#${s.id}`}
+                      onClick={() => setOpen(false)}
+                      aria-current={active === s.id ? 'true' : undefined}
+                      className="flex items-baseline gap-4 border-b border-fg/[0.07] py-3"
+                    >
+                      <span className="w-6 font-mono text-xs text-fg-dim">{String(i + 1).padStart(2, '0')}</span>
+                      <span className={`text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] ${active === s.id ? 'text-accent' : 'text-fg'}`}>
+                        {s.label}
+                      </span>
+                    </a>
+                  </motion.li>
+                ))}
+              </ol>
+              <div className="mt-10 flex flex-wrap gap-3">
+                {socials.map((s) => (
+                  <a key={s.id} href={s.href} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+
+      {/* Chapter rail — wide screens */}
+      <nav
+        aria-label="Section index"
+        className={`fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 transition-opacity duration-500 2xl:block ${
+          activeIndex >= 0 ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      >
+        <p className="mb-4 text-right font-mono text-[0.68rem] text-fg-dim" aria-hidden="true">
+          <span className="text-fg">{String(activeIndex + 1).padStart(2, '0')}</span> / {String(sections.length).padStart(2, '0')}
+        </p>
+        <ul className="flex flex-col items-end gap-2">
+          {sections.map((s) => {
+            const isActive = active === s.id
+            return (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  tabIndex={activeIndex >= 0 ? 0 : -1}
+                  aria-current={isActive ? 'true' : undefined}
+                  className="group flex items-center gap-3 py-1.5"
+                >
+                  <span
+                    className={`font-mono text-[0.65rem] uppercase tracking-[0.16em] transition-all duration-300 ${
+                      isActive ? 'text-fg opacity-100' : 'translate-x-2 text-fg-dim opacity-0 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:opacity-100'
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                  <span className={`h-px transition-all duration-500 ${isActive ? 'w-8 bg-accent' : 'w-4 bg-fg/25 group-hover:w-6'}`} aria-hidden="true" />
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+    </>
   )
 }
