@@ -31,9 +31,8 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          <h1 id="hero-title" className="mt-8 font-display text-[clamp(2.9rem,12.5vw,7rem)] font-bold leading-[0.9] tracking-[-0.05em] lg:text-[clamp(4.25rem,6.8vw,7rem)]">
-            <motion.span {...rise(0.08)} className="text-ice block pb-[0.06em]">Mohana</motion.span>
-            <motion.span {...rise(0.14)} className="text-ice block pb-[0.06em]">Prasath G</motion.span>
+          <h1 id="hero-title" className="mt-8 whitespace-nowrap font-display text-[clamp(1.6rem,9.2vw,3.6rem)] font-bold leading-[1] tracking-[-0.04em] lg:text-[clamp(3rem,4.6vw,5rem)]">
+            <motion.span {...rise(0.08)} className="text-ice inline-block pb-[0.06em]">Mohana Prasath G</motion.span>
           </h1>
 
           <motion.p {...rise(0.24)} className="mt-7 max-w-[36rem] text-[1.05rem] leading-relaxed text-fg-muted sm:text-lg">

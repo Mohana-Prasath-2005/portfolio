@@ -114,10 +114,9 @@ export default function Contact() {
             <p className="max-w-[34rem] text-lg leading-relaxed text-fg-muted">{person.availability}</p>
             <a
               href={`mailto:${person.email}`}
-              className="group mt-8 block font-display text-[clamp(1.35rem,6vw,3.4rem)] font-semibold leading-[1.05] tracking-[-0.04em] text-fg [overflow-wrap:anywhere]"
+              className="group mt-8 block whitespace-nowrap font-display text-[clamp(1rem,5.4vw,2.1rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-fg lg:text-[clamp(1.6rem,2.5vw,2.6rem)]"
             >
               <span className="text-ice">{person.email.split('@')[0]}</span>
-              <wbr />
               <span className="text-fg-dim transition-colors duration-300 group-hover:text-accent">@{person.email.split('@')[1]}</span>
             </a>
             <div className="mt-8 flex flex-wrap items-center gap-3">

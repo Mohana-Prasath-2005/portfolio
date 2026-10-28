@@ -99,8 +99,20 @@ export default function Journey() {
                 </span>
               </div>
               <h3 className="mt-6 font-display text-[2.6rem] font-bold leading-none text-fg sm:text-6xl">{openFabric.org}</h3>
-              <p className="mt-3 text-signal">{openFabric.role} · {openFabric.where}</p>
+              <p className="mt-3 text-signal">{openFabric.where}</p>
               <p className="mt-4 max-w-[34rem] leading-relaxed text-fg-muted">{openFabric.detail}</p>
+              <ol className="relative mt-6 space-y-4 border-l border-fg/[0.12] pl-6">
+                {openFabric.positions.map((p) => (
+                  <li key={p.title} className="relative">
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -left-[29px] top-1.5 h-[9px] w-[9px] rounded-full ${p.current ? 'anim-pulse bg-accent shadow-[0_0_10px_rgb(var(--accent))]' : 'bg-canvas shadow-[inset_0_0_0_1.5px_rgb(var(--fg)/0.4)]'}`}
+                    />
+                    <p className={`font-display text-lg font-semibold leading-tight ${p.current ? 'text-fg' : 'text-fg-muted'}`}>{p.title}</p>
+                    <p className={`mt-0.5 text-[0.72rem] uppercase tracking-[0.14em] ${p.current ? 'text-accent' : 'text-fg-dim'}`}>{p.period}</p>
+                  </li>
+                ))}
+              </ol>
               <div className="mt-6"><Trace /></div>
 
               <div className="mt-auto pt-8">
